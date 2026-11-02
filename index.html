@@ -86,6 +86,48 @@ tbody tr:hover{background: #1f2839;}
 .slot.off{background: #10161f; border: 1px solid #1c2532; cursor: default; opacity: 0.75;}
 .slot.off:hover{background: #10161f; border-color: #1c2532;}
 .slot.off small{color: #5a6b85; font-style: italic;}
+.lcard{min-height: 58px; border-radius: 9px; background: #172238; border: 1px solid #2b4570; padding: 5px 7px; cursor: pointer; display: flex; flex-direction: column; gap: 1px;}
+.lcard:hover{border-color: var(--acc); background: #1b2942;}
+.lcard b{font-size: 12px; font-weight: 650; line-height: 1.2;}
+.lcard small{font-size: 10.5px; color: #9fb0cc; line-height: 1.25;}
+.lcard .lt{font-size: 10px; color: #7488a6;}
+.lcard.pending{border-style: dashed; border-color: #c9a227; background: #26210f;}
+.lcard.gone{display: none;}
+.wkrow th{white-space: nowrap;}
+.brkrow td{background: #101720; color: #6b7d99; font-size: 11px; text-align: center; font-style: italic;}
+.dirtybar{position: sticky; top: 0; z-index: 5; background: #2a230f; border: 1px solid #c9a227; border-radius: 10px; padding: 9px 11px; margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px;}
+.pendlist{font-size: 12.5px; color: #cdd8e8;}
+.daygrid{display: flex; flex-direction: column; gap: 8px;}
+.dayrow{display: flex; gap: 10px; align-items: stretch;}
+.daytime{min-width: 92px; font-size: 11.5px; color: #8ea3c2; padding-top: 6px;}
+.daylessons{flex: 1; display: flex; flex-direction: column; gap: 6px;}
+.daybreak{border: 1px dashed #23303f; border-radius: 9px; padding: 7px 10px; color: #6b7d99; font-size: 12px; font-style: italic;}
+@media (max-width: 620px){
+  .daytime{min-width: 70px; font-size: 10.5px;}
+  .lcard b{font-size: 11.5px;} .lcard small{font-size: 10px;}
+  .lcard .lt{display: none;}
+}
+.tcard{background: #1d2c47; border: 1px solid #2f5590; border-radius: 9px; padding: 5px 7px; margin: 2px 0; cursor: pointer; text-align: left;}
+.tcard:hover{border-color: var(--acc);}
+.tcsub{font-size: 12px; font-weight: 650; line-height: 1.2;}
+.tcmeta{font-size: 10.5px; color: var(--mut); line-height: 1.25;}
+.tctime{font-size: 10px; color: #7f90ab; margin-top: 1px;}
+.tccls{font-size: 10px; color: #8fb0dd; margin-top: 2px; font-weight: 600;}
+.tmore{font-size: 10px; color: var(--mut); text-align: center; padding: 1px 0;}
+.brk{background: #10161f; border: 1px dashed #26313f; border-radius: 8px; padding: 6px 9px; font-size: 11.5px; color: #6c7d96; font-style: italic; text-align: center;}
+.slot.emptycell{cursor: default; min-height: 40px; background: transparent; border-color: #212b38;}
+.slot.emptycell small{color: #3f4f68;}
+.tvv th.dh{min-width: 82px;}
+.tfilters{display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;}
+.dayline{display: flex; gap: 8px; align-items: flex-start; margin-top: 8px;}
+.dayline .dname{flex: 0 0 96px; font-size: 12px; color: var(--mut); padding-top: 8px;}
+.dayline .dbody{flex: 1 1 auto; min-width: 0;}
+@media (max-width: 620px){
+  .dayline{flex-direction: column; gap: 2px;}
+  .dayline .dname{flex: none; padding-top: 6px; font-weight: 600;}
+  .tcard{padding: 7px 8px;}
+  .tcsub{font-size: 12.5px;} .tcmeta{font-size: 11px;} .tctime{font-size: 10.5px;}
+}
 .slot b{font-size: 12px; font-weight: 650; line-height: 1.25;}
 .slot small{font-size: 10.5px; color: var(--mut); line-height: 1.3;}
 .slot .plus{color: #3f4f68; font-size: 16px; text-align: center;}
@@ -175,7 +217,7 @@ tbody tr:hover{background: #1f2839;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq58UZXHHTVSnblWJsnma9OPMEHxYaPs1QKkci9xjjyOZ5ZBoYqs0yN1llKePaWhVAQYL2zJwzwwLFgErBmxYGBi4s1pTOb2D1tsdOriTaJLXMHdPvdPFO6zS3U5ISnz-5IKQ3SxpF4q5modvbw6VtwapjtgoLUHrdJmbXE0t1w9AonNgLCyQV5gsQCOu1VYLILI-s";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6Ocs15E-iD2oVp9Ol1h2JcYBMz8_rdwM5MZAro2kF_0bdlFD5kS01bgY4IpTVLwMkTIUj3In0wrkgxPyRofopZYu1yqwmw9qXcMW7mw6vYYAN9s5vqg9x1bTlyE4O7guKCHjKrhnr16tiIG2VeZmo_b_6KN_7tsXXBag2hYYZB0qG3LY4n3HKIzxKizJ8JnM8pZz";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -474,7 +516,7 @@ function go(v){
   else if (v === "settings" || v === "school") { settingsView(); }
   else if (v === "curriculum") { currView(); }
   else if (v === "generate") { genView(); }
-  else if (v === "timetable") { ttView(); }
+  else if (v === "timetable") { ttPage(); }
   else if (v === "conflicts") { confView(); }
   else if (v === "export") { expView(); }
   else if (v === "admins") { admView(); }
@@ -1290,7 +1332,63 @@ function ttView(){
   drawGrid();
 }
 var TT_MODE = "sec";
+var TT_F = {teacher: "", day: "", subject: "", q: "", view: "week", daySel: 0};
 function cellKey(d, p){ return d + "-" + p; }
+function ttTime(p){
+  var pp = ((S.school || {}).periods || [])[p] || {};
+  return {s: String(pp.start || ""), e: String(pp.end || ""),
+          n: String(pp.name || ("P" + (p + 1))), k: String(pp.kind || "lesson")};
+}
+function ttAllLessons(){
+  // Every stored lesson, flat. Nothing is invented here: an empty timetable
+  // yields an empty list and the page says so.
+  var out = [];
+  var tables = S.timetables || {};
+  for (var sid in tables) {
+    var t = tables[sid] || {};
+    for (var k in t) {
+      var sl = t[k] || {};
+      if (!sl.subject_id) { continue; }
+      var parts = String(k).split("-");
+      if (parts.length !== 2) { continue; }
+      out.push({sec: sid, d: parseInt(parts[0], 10), p: parseInt(parts[1], 10),
+                subject_id: sl.subject_id, teacher_id: sl.teacher_id || "",
+                room_id: sl.room_id || ""});
+    }
+  }
+  return out;
+}
+function ttVisible(){
+  var all = ttAllLessons();
+  var out = [];
+  var q = String(TT_F.q || "").toLowerCase();
+  for (var i = 0; i < all.length; i++) {
+    var l = all[i];
+    if (TT_SECTION !== "" && l.sec !== TT_SECTION) { continue; }
+    if (TT_F.teacher !== "" && String(l.teacher_id) !== TT_F.teacher) { continue; }
+    if (TT_F.subject !== "" && String(l.subject_id) !== TT_F.subject) { continue; }
+    if (TT_F.day !== "" && String(l.d) !== TT_F.day) { continue; }
+    if (q !== "") {
+      var hay = (nameOf(S.subjects, l.subject_id) + " " + nameOf(S.teachers, l.teacher_id) +
+                 " " + nameOf(S.rooms, l.room_id) + " " + sectionName(l.sec)).toLowerCase();
+      if (hay.indexOf(q) < 0) { continue; }
+    }
+    out.push(l);
+  }
+  return out;
+}
+function ttCard(l){
+  var t = ttTime(l.p);
+  var meta = [];
+  if (l.teacher_id) { meta.push(nameOf(S.teachers, l.teacher_id)); }
+  if (l.room_id) { meta.push(nameOf(S.rooms, l.room_id)); }
+  var h = "<div class='tcard' data-lesson='" + esc(l.sec) + "|" + l.d + "|" + l.p + "'>";
+  h = h + "<div class='tcsub'>" + esc(nameOf(S.subjects, l.subject_id) || "Lesson") + "</div>";
+  h = h + "<div class='tcmeta'>" + esc(meta.join(" - ") || "no teacher or room") + "</div>";
+  h = h + "<div class='tctime'>" + esc(t.s + " - " + t.e) + "</div>";
+  if (TT_SECTION === "") { h = h + "<div class='tccls'>" + esc(sectionName(l.sec)) + "</div>"; }
+  return h + "</div>";
+}
 function drawGrid(){
   var days = S.school.days || [];
   var periods = S.school.periods || [];
@@ -1439,38 +1537,143 @@ function confView(){
 }
 
 
+var EXP_SCOPE = "school";
+var EXP_TARGET = "";
+var EXP_GRADE = "";
+var EXP_DAY = "";
+var EXP_FMT = "pdf";
+function expLessonsStored(){
+  var n = 0;
+  var t = S.timetables || {};
+  for (var sid in t) {
+    for (var k in (t[sid] || {})) {
+      if (((t[sid] || {})[k] || {}).subject_id) { n = n + 1; }
+    }
+  }
+  return n;
+}
+function expGrades(){
+  var out = [];
+  for (var i = 0; i < (S.classes || []).length; i++) {
+    var g = String(S.classes[i].grade || "").trim();
+    if (g !== "" && out.indexOf(g) < 0) { out.push(g); }
+  }
+  out.sort();
+  return out;
+}
+function expTargetHtml(){
+  var h = "";
+  if (EXP_SCOPE === "class") {
+    h = h + "<label class='f'><span>Class</span><select id='expTarget'>";
+    for (var i = 0; i < (S.classes || []).length; i++) {
+      h = h + "<option value='" + esc(S.classes[i].id) + "'" + (S.classes[i].id === EXP_TARGET ? " selected" : "") + ">" + esc(S.classes[i].name) + "</option>";
+    }
+    return h + "</select></label>";
+  }
+  if (EXP_SCOPE === "section") {
+    h = h + "<label class='f'><span>Section</span><select id='expTarget'>";
+    for (var j = 0; j < (S.sections || []).length; j++) {
+      h = h + "<option value='" + esc(S.sections[j].id) + "'" + (S.sections[j].id === EXP_TARGET ? " selected" : "") + ">" + esc(sectionName(S.sections[j].id)) + "</option>";
+    }
+    return h + "</select></label>";
+  }
+  if (EXP_SCOPE === "teacher") {
+    if ((S.teachers || []).length === 0) {
+      return "<div class='muted' style='font-size:12.5px'>No teachers yet.</div>";
+    }
+    h = h + "<label class='f'><span>Teacher</span><select id='expTarget'>";
+    for (var k = 0; k < S.teachers.length; k++) {
+      h = h + "<option value='" + esc(S.teachers[k].id) + "'" + (S.teachers[k].id === EXP_TARGET ? " selected" : "") + ">" + esc(S.teachers[k].name) + "</option>";
+    }
+    return h + "</select></label>";
+  }
+  if (EXP_SCOPE === "grade") {
+    var gs = expGrades();
+    if (gs.length === 0) { return "<div class='muted' style='font-size:12.5px'>No grades are set on the classes yet.</div>"; }
+    h = h + "<label class='f'><span>Grade</span><select id='expGrade'>";
+    for (var m = 0; m < gs.length; m++) {
+      h = h + "<option value='" + esc(gs[m]) + "'" + (gs[m] === EXP_GRADE ? " selected" : "") + ">Grade " + esc(gs[m]) + "</option>";
+    }
+    return h + "</select></label>";
+  }
+  return "";
+}
+function expDayHtml(){
+  var h = "<label class='f'><span>Day</span><select id='expDay'><option value=''>Every day</option>";
+  for (var i = 0; i < ((S.school || {}).days || []).length; i++) {
+    var dn = S.school.days[i];
+    h = h + "<option value='" + i + "'" + (String(EXP_DAY) === String(i) ? " selected" : "") + ">" + esc(dn) + "</option>";
+  }
+  return h + "</select></label>";
+}
 function expView(){
+  var stored = expLessonsStored();
   var h = head("Export", "PDF, Excel and CSV files built from the saved timetable");
-  h = h + "<div class='card'><h2>Sections to include</h2>";
-  h = h + "<label class='chk'><input type='checkbox' id='expAll' checked><span><b>All sections</b></span></label>";
-  for (var i = 0; i < (S.sections || []).length; i++) {
-    h = h + "<label class='chk'><input type='checkbox' data-exp='" + esc(S.sections[i].id) + "' checked><span>" + esc(sectionName(S.sections[i].id)) + "</span></label>";
+  if (stored === 0) {
+    h = h + "<div class='card'><div class='empty'>There are no saved lessons yet, so there is nothing to export. " +
+            "Generate a timetable and approve it first.</div></div>";
+    $("main").innerHTML = h;
+    return;
   }
-  h = h + "<div style='margin-top:12px;display:flex;gap:8px;flex-wrap:wrap'>";
-  h = h + "<button class='primary' data-exp-fmt='pdf'>Download PDF</button>";
-  h = h + "<button data-exp-fmt='excel'>Download Excel</button>";
-  h = h + "<button data-exp-fmt='csv'>Download CSV</button>";
-  h = h + "</div><div id='expOut' style='margin-top:12px'></div></div>";
-  h = h + "<div class='card'><h2>Email the files instead</h2><div class='muted' style='font-size:13px'>Ask the bot for the files with the command /export and it sends them in Telegram.</div></div>";
+  h = h + "<div class='card'><h2>What to export<span>" + stored + " saved lesson(s)</span></h2>";
+  h = h + "<label class='f'><span>Show</span><select id='expScope'>";
+  h = h + "<option value='school'" + (EXP_SCOPE === "school" ? " selected" : "") + ">The whole school</option>";
+  h = h + "<option value='class'" + (EXP_SCOPE === "class" ? " selected" : "") + ">One class</option>";
+  h = h + "<option value='section'" + (EXP_SCOPE === "section" ? " selected" : "") + ">One section</option>";
+  h = h + "<option value='teacher'" + (EXP_SCOPE === "teacher" ? " selected" : "") + ">One teacher</option>";
+  h = h + "<option value='grade'" + (EXP_SCOPE === "grade" ? " selected" : "") + ">One grade</option>";
+  h = h + "</select></label>";
+  h = h + expTargetHtml();
+  h = h + expDayHtml();
+  h = h + "</div>";
+  h = h + "<div class='card'><h2>Format</h2>";
+  h = h + "<label class='chk'><input type='radio' name='expf' value='pdf'" + (EXP_FMT === "pdf" ? " checked" : "") + "><span><b>PDF</b> - one page per class with the weekly grid, lesson times, subjects, teachers and classrooms</span></label>";
+  h = h + "<label class='chk'><input type='radio' name='expf' value='excel'" + (EXP_FMT === "excel" ? " checked" : "") + "><span><b>Excel</b> - a sorted lesson list plus a sheet per class</span></label>";
+  h = h + "<label class='chk'><input type='radio' name='expf' value='csv'" + (EXP_FMT === "csv" ? " checked" : "") + "><span><b>CSV</b> - one row per lesson: day, period, start, end, subject, teacher, class, classroom</span></label>";
+  h = h + "<div style='margin-top:12px'><button class='primary' id='expGo'>Download</button></div>";
+  h = h + "<div id='expOut' style='margin-top:12px'></div>";
+  h = h + "<div class='note' style='margin-top:10px'>Excel files are written in the SpreadsheetML format (.xls), which Excel, LibreOffice and Google Sheets all open. "
+       + "A true .xlsx is a zip container and this runtime has no zip or binary byte support, so .xlsx cannot be produced here.</div>";
+  h = h + "</div>";
   $("main").innerHTML = h;
-  $("expAll").onchange = function(){
-    var boxes = $("main").querySelectorAll("[data-exp]");
-    for (var i = 0; i < boxes.length; i++) { boxes[i].checked = this.checked; }
-  };
-  var btns = $("main").querySelectorAll("[data-exp-fmt]");
-  for (var b = 0; b < btns.length; b++) {
-    btns[b].onclick = function(){ doExport(this.getAttribute("data-exp-fmt")); };
+  $("expScope").onchange = function(){ EXP_SCOPE = this.value; EXP_TARGET = ""; EXP_GRADE = ""; expView(); };
+  if ($("expTarget")) { $("expTarget").onchange = function(){ EXP_TARGET = this.value; }; }
+  if ($("expGrade")) { $("expGrade").onchange = function(){ EXP_GRADE = this.value; }; }
+  if ($("expDay")) { $("expDay").onchange = function(){ EXP_DAY = this.value; }; }
+  var rs = $("main").querySelectorAll("input[name='expf']");
+  for (var r = 0; r < rs.length; r++) {
+    rs[r].onchange = function(){ EXP_FMT = this.value; };
   }
+  $("expGo").onclick = function(){ doExport(EXP_FMT); };
 }
 function doExport(fmt){
-  var ids = [];
-  var boxes = $("main").querySelectorAll("[data-exp]");
-  for (var i = 0; i < boxes.length; i++) { if (boxes[i].checked) { ids.push(boxes[i].getAttribute("data-exp")); } }
-  if (ids.length === 0) { toast("Choose at least one section.", "err"); return; }
+  var req = {scope: EXP_SCOPE};
+  if (EXP_SCOPE === "class" || EXP_SCOPE === "section" || EXP_SCOPE === "teacher") {
+    if (EXP_TARGET === "") {
+      var sel = $("expTarget");
+      if (sel) { EXP_TARGET = sel.value; }
+    }
+    if (EXP_TARGET === "") { toast("Choose which one to export.", "err"); return; }
+    req.target = EXP_TARGET;
+    if (EXP_SCOPE === "teacher") { req.teacher_id = EXP_TARGET; }
+  }
+  if (EXP_SCOPE === "grade") {
+    if (EXP_GRADE === "") {
+      var gs = $("expGrade");
+      if (gs) { EXP_GRADE = gs.value; }
+    }
+    if (EXP_GRADE === "") { toast("Choose a grade.", "err"); return; }
+    req.grade = EXP_GRADE;
+  }
+  if (String(EXP_DAY) !== "") { req.day = parseInt(EXP_DAY, 10); }
   $("expOut").innerHTML = "<div class='muted'>Building the file...</div>";
-  api("export." + fmt, {section_ids: ids}).then(function(d){
+  api("export." + fmt, req).then(function(d){
     var content = d.content || "";
     var mime = d.mime || "text/plain";
+    if (content === "") {
+      $("expOut").innerHTML = "<div class='warnbox'>The server returned an empty file, so nothing was downloaded.</div>";
+      return;
+    }
     if (d.encoding === "base64") {
       var bin = atob(content);
       var bytes = new Uint8Array(bin.length);
@@ -1479,7 +1682,12 @@ function doExport(fmt){
     } else {
       saveBlob(new Blob([content], {type: mime}), d.filename);
     }
-    $("expOut").innerHTML = "<div class='note'>Saved " + esc(d.filename) + " (" + Math.round(content.length / 1024) + " KB). Check your downloads.</div>";
+    var kb = content.length / 1024;
+    if (kb < 1) { kb = 1; }
+    var summary = "<div class='note'>Saved " + esc(d.filename) + " (" + Math.round(kb) + " KB, " +
+                  (d.lessons || 0) + " lesson(s)" + (d.pages ? ", " + d.pages + " page(s)" : "") +
+                  "). Check your downloads.</div>";
+    $("expOut").innerHTML = summary;
   }).catch(function(e){ $("expOut").innerHTML = ""; fail(e); });
 }
 function saveBlob(blob, filename){
@@ -3241,6 +3449,422 @@ function validateStored(){
     h = h + "<div class='muted' style='font-size:12.5px;margin-top:8px'>" + (d.lessons || 0) + " lesson(s) stored.</div></div>";
     $("genOut").innerHTML = h;
   }).catch(fail);
+}
+// ---------------- Interactive weekly timetable ----------------
+var TT_BUSY = "";
+
+function ttEmptyHtml(msg, sub){
+  var h = "<div class='card'><div class='empty'>" + esc(msg);
+  if (sub) { h = h + "<div class='muted' style='font-size:12.5px;margin-top:6px'>" + esc(sub) + "</div>"; }
+  return h + "</div></div>";
+}
+function ttLoadingHtml(what){
+  return "<div class='card'><div class='empty'>" + esc(what || "Loading...") + "</div></div>";
+}
+function ttSelect(id, label, list, cur, emptyLabel){
+  var h = "<label class='f'><span>" + esc(label) + "</span><select id='" + id + "'>";
+  h = h + "<option value=''>" + esc(emptyLabel) + "</option>";
+  for (var i = 0; i < list.length; i++) {
+    h = h + "<option value='" + esc(list[i].id) + "'" + (list[i].id === cur ? " selected" : "") + ">" + esc(list[i].name || list[i].code) + "</option>";
+  }
+  return h + "</select></label>";
+}
+function ttFiltersHtml(){
+  var secs = [];
+  for (var i = 0; i < (S.sections || []).length; i++) {
+    var s = S.sections[i];
+    secs.push({id: s.id, name: sectionName(s.id)});
+  }
+  var days = (S.school || {}).days || [];
+  var dayOpts = [];
+  for (var d = 0; d < days.length; d++) { dayOpts.push({id: String(d), name: days[d]}); }
+  var h = "<div class='card'><h2>Find lessons<span>" + ttVisible().length + " shown</span></h2>";
+  h = h + "<div class='tfilters'>";
+  if (ttReadOnly()) {
+    h = h + "<div class='f'><span>Class</span><div class='muted' style='padding-top:6px'>" + esc(TT_SECTION ? sectionName(TT_SECTION) : "your own lessons") + "</div></div>";
+  } else {
+    h = h + ttSelect("ttFClass", "Class", secs, TT_SECTION, "Whole school");
+    h = h + ttSelect("ttFTeacher", "Teacher", S.teachers || [], TT_F.teacher, "Any teacher");
+    h = h + ttSelect("ttFSubject", "Subject", S.subjects || [], TT_F.subject, "Any subject");
+    h = h + ttSelect("ttFDay", "Day", dayOpts, TT_F.day, "Every day");
+  }
+  h = h + "<label class='f'><span>Search</span><input id='ttFQ' value='" + esc(TT_F.q) + "' placeholder='subject, teacher or room'></label>";
+  h = h + "</div>";
+  h = h + "<div style='margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center'>";
+  h = h + "<button class='sm" + (TT_F.view === "week" ? " primary" : "") + "' id='ttVWeek'>Weekly view</button>";
+  h = h + "<button class='sm" + (TT_F.view === "day" ? " primary" : "") + "' id='ttVDay'>Daily view</button>";
+  h = h + "<button class='sm ghost' id='ttClearF'>Clear filters</button>";
+  h = h + "<button class='sm ghost' id='ttReload'>Refresh</button>";
+  if (canWrite()) { h = h + "<button class='sm ghost' id='ttGoGen'>Generate</button>"; }
+  h = h + "</div></div>";
+  return h;
+}
+function ttReadOnly(){
+  return !canWrite();
+}
+function ttBindFilters(){
+  function on(id, fn){
+    if ($(id)) { $(id).onchange = fn; }
+  }
+  on("ttFClass", function(){ TT_SECTION = this.value; ttRender(); });
+  on("ttFTeacher", function(){ TT_F.teacher = this.value; ttRender(); });
+  on("ttFSubject", function(){ TT_F.subject = this.value; ttRender(); });
+  on("ttFDay", function(){ TT_F.day = this.value; ttRender(); });
+  if ($("ttFQ")) {
+    $("ttFQ").oninput = function(){ TT_F.q = this.value; ttRender(); if ($("ttFQ")) { $("ttFQ").focus(); } };
+  }
+  if ($("ttVWeek")) { $("ttVWeek").onclick = function(){ TT_F.view = "week"; ttRender(); }; }
+  if ($("ttVDay")) { $("ttVDay").onclick = function(){ TT_F.view = "day"; ttRender(); }; }
+  if ($("ttClearF")) {
+    $("ttClearF").onclick = function(){
+      TT_F = {teacher: "", day: "", subject: "", q: "", view: TT_F.view, daySel: 0};
+      ttRender();
+    };
+  }
+  if ($("ttReload")) {
+    $("ttReload").onclick = function(){
+      $("ttBody").innerHTML = ttLoadingHtml("Refreshing the timetable...");
+      refresh().then(function(){ ttRender(); }).catch(function(){ ttRender(); });
+    };
+  }
+  if ($("ttGoGen")) { $("ttGoGen").onclick = function(){ go("generate"); }; }
+}
+function ttWeekHtml(lessons){
+  var days = (S.school || {}).days || [];
+  var periods = (S.school || {}).periods || [];
+  var hol = (S.school || {}).holidays || [];
+  var blocked = (S.school || {}).unavailable || [];
+  var map = {};
+  for (var i = 0; i < lessons.length; i++) {
+    var l = lessons[i];
+    var k = l.d + "-" + l.p;
+    if (!map[k]) { map[k] = []; }
+    map[k].push(l);
+  }
+  var h = "<div class='card'><h2>Weekly timetable<span>" + esc(TT_SECTION === "" ? "whole school" : sectionName(TT_SECTION)) + "</span></h2>";
+  if (days.length === 0 || periods.length === 0) {
+    return h + "<div class='empty'>The school week is not configured yet. Open School schedule to set the days and periods.</div></div>";
+  }
+  h = h + "<div class='tblwrap'><table class='tt tvv'><thead><tr><th class='dh'>Period</th>";
+  for (var d = 0; d < days.length; d++) {
+    var isHol = hol.indexOf(String(days[d])) >= 0;
+    h = h + "<th>" + esc(days[d]) + (isHol ? "<div class='muted' style='font-size:10px;font-weight:400'>holiday</div>" : "") + "</th>";
+  }
+  h = h + "</tr></thead><tbody>";
+  for (var p = 0; p < periods.length; p++) {
+    var t = ttTime(p);
+    if (t.k !== "lesson") {
+      // Break and lunch get their own full-width row, clearly not a lesson.
+      h = h + "<tr><th class='dh'>" + esc(t.n) + "<div class='muted' style='font-size:10px;font-weight:400'>" + esc(t.s + "-" + t.e) + "</div></th>";
+      h = h + "<td colspan='" + days.length + "'><div class='brk'>" + esc(t.k === "lunch" ? "Lunch break" : "Break") + " " + esc(t.s + " - " + t.e) + "</div></td></tr>";
+      continue;
+    }
+    h = h + "<tr><th class='dh'>" + esc(t.n) + "<div class='muted' style='font-size:10px;font-weight:400'>" + esc(t.s + "-" + t.e) + "</div></th>";
+    for (var d2 = 0; d2 < days.length; d2++) {
+      var key = d2 + "-" + p;
+      var hd = hol.indexOf(String(days[d2])) >= 0;
+      var bd = blocked.indexOf(String(key)) >= 0;
+      if (hd || bd) {
+        h = h + "<td><div class='slot off'><small>" + esc(hd ? "holiday" : "unavailable") + "</small></div></td>";
+        continue;
+      }
+      var cell = map[key] || [];
+      h = h + "<td>";
+      if (cell.length === 0) {
+        h = h + "<div class='slot emptycell'><small>free</small></div>";
+      } else {
+        var showN = cell.length;
+        if (showN > 2) { showN = 2; }
+        for (var c = 0; c < showN; c++) { h = h + ttCard(cell[c]); }
+        if (cell.length > showN) {
+          h = h + "<div class='tmore' data-more='" + key + "'>+" + (cell.length - showN) + " more</div>";
+        }
+      }
+      h = h + "</td>";
+    }
+    h = h + "</tr>";
+  }
+  h = h + "</tbody></table></div>";
+  h = h + "<div class='legend'><span>Tap a lesson to see its details.</span><span>Periods run down the side, days across the top.</span></div>";
+  return h + "</div>";
+}
+function ttDayHtml(lessons){
+  var days = (S.school || {}).days || [];
+  var periods = (S.school || {}).periods || [];
+  var hol = (S.school || {}).holidays || [];
+  var blocked = (S.school || {}).unavailable || [];
+  var di = parseInt(TT_F.day === "" ? String(TT_F.daySel) : TT_F.day, 10);
+  if (isNaN(di) || di < 0 || di >= days.length) { di = 0; }
+  var map = {};
+  for (var i = 0; i < lessons.length; i++) {
+    if (lessons[i].d !== di) { continue; }
+    var k = lessons[i].d + "-" + lessons[i].p;
+    if (!map[k]) { map[k] = []; }
+    map[k].push(lessons[i]);
+  }
+  var h = "<div class='card'><h2>Daily timetable<span>" + esc(days[di] || "day") + (TT_SECTION === "" ? " - whole school" : " - " + sectionName(TT_SECTION)) + "</span></h2>";
+  h = h + "<div style='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px'>";
+  for (var d = 0; d < days.length; d++) {
+    h = h + "<button class='sm" + (d === di ? " primary" : "") + "' data-daypick='" + d + "'>" + esc(days[d]) + "</button>";
+  }
+  h = h + "</div>";
+  var isHol = hol.indexOf(String(days[di])) >= 0;
+  var shown = 0;
+  for (var p = 0; p < periods.length; p++) {
+    var t = ttTime(p);
+    if (t.k !== "lesson") {
+      h = h + "<div class='dayline'><div class='dname'>" + esc(t.s + "-" + t.e) + "</div><div class='dbody'><div class='brk'>" + esc(t.k === "lunch" ? "Lunch break" : "Break") + " " + esc(t.s + " - " + t.e) + "</div></div></div>";
+      continue;
+    }
+    var key = di + "-" + p;
+    var cell = map[key] || [];
+    var bd = blocked.indexOf(String(key)) >= 0;
+    h = h + "<div class='dayline'><div class='dname'>" + esc(t.n) + "<div class='muted' style='font-size:10px'>" + esc(t.s + "-" + t.e) + "</div></div><div class='dbody'>";
+    if (isHol) {
+      h = h + "<div class='brk'>Holiday - no lessons</div>";
+    } else if (bd) {
+      h = h + "<div class='brk'>Not available</div>";
+    } else if (cell.length === 0) {
+      h = h + "<div class='slot emptycell' style='min-height:34px'><small>free period</small></div>";
+    } else {
+      for (var c = 0; c < cell.length; c++) { h = h + ttCard(cell[c]); shown = shown + 1; }
+    }
+    h = h + "</div></div>";
+  }
+  if (shown === 0 && !isHol) {
+    h = h + "<div class='note'>No lesson is stored on this day with the current filters.</div>";
+  }
+  return h + "</div>";
+}
+function ttRender(){
+  if (!$("ttBody")) { return; }
+  var lessons = ttVisible();
+  var h = "";
+  if (TT_F.view === "day") { h = ttDayHtml(lessons); } else { h = ttWeekHtml(lessons); }
+  $("ttBody").innerHTML = h;
+  var cards = $("ttBody").querySelectorAll("[data-lesson]");
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].onclick = function(){ ttOpenLesson(this.getAttribute("data-lesson")); };
+  }
+  var more = $("ttBody").querySelectorAll("[data-more]");
+  for (var m = 0; m < more.length; m++) {
+    more[m].onclick = function(){
+      TT_F.view = "day";
+      var btn = this.getAttribute("data-more");
+      ttRender();
+    };
+  }
+  var dp = $("ttBody").querySelectorAll("[data-daypick]");
+  for (var k = 0; k < dp.length; k++) {
+    dp[k].onclick = function(){
+      TT_F.daySel = parseInt(this.getAttribute("data-daypick"), 10);
+      TT_F.day = String(TT_F.daySel);
+      ttRender();
+    };
+  }
+  if ($("ttCount")) {
+    $("ttCount").innerHTML = ttVisible().length + " lesson(s)";
+  }
+}
+function ttPage(){
+  if (!S || !S.school) {
+    $("main").innerHTML = head("Timetable", "Loading the saved timetable") + ttLoadingHtml("Loading...");
+    return;
+  }
+  var ro = ttReadOnly();
+  if (ro && S.me && S.me.role === "student" && S.me.section_id) {
+    TT_SECTION = S.me.section_id;
+  }
+  if (!ro && TT_SECTION === "" && (S.sections || []).length > 0 && !TT_F.q && TT_F.teacher === "" && TT_F.subject === "" && TT_F.day === "") {
+    // First visit as an administrator: start on the first class, which is the
+    // common case. Whole school stays one tap away in the class filter.
+    TT_SECTION = S.sections[0].id;
+  }
+  var h = head(ro ? "My timetable" : "Timetable",
+               ro ? "Your own lessons" : "Tap a lesson to open it",
+               "<span class='pill' id='ttCount'>" + ttVisible().length + " lesson(s)</span>");
+  if ((S.sections || []).length === 0) {
+    $("main").innerHTML = h + "<div class='card'><div class='empty'>No class sections exist yet. Add a class first, then generate a timetable.</div></div>";
+    return;
+  }
+  h = h + ttFiltersHtml();
+  h = h + "<div id='ttBody'>" + ttLoadingHtml("Loading lessons...") + "</div>";
+  $("main").innerHTML = h;
+  ttBindFilters();
+  ttRender();
+}
+function ttOpenLesson(key){
+  var parts = String(key).split("|");
+  if (parts.length < 3) { return; }
+  var sec = parts[0];
+  var d = parseInt(parts[1], 10);
+  var p = parseInt(parts[2], 10);
+  var table = (S.timetables || {})[sec] || {};
+  var l = table[cellKey(d, p)] || {};
+  var t = ttTime(p);
+  var days = (S.school || {}).days || [];
+  var h = "<div class='tblwrap'><table><tbody>";
+  h = h + "<tr><td class='muted'>Subject</td><td><b>" + esc(nameOf(S.subjects, l.subject_id) || "-") + "</b></td></tr>";
+  h = h + "<tr><td class='muted'>Teacher</td><td>" + esc(nameOf(S.teachers, l.teacher_id) || "not set") + "</td></tr>";
+  h = h + "<tr><td class='muted'>Classroom</td><td>" + esc(nameOf(S.rooms, l.room_id) || "not set") + "</td></tr>";
+  h = h + "<tr><td class='muted'>Day and period</td><td>" + esc((days[d] || "-") + " - " + t.n) + "</td></tr>";
+  h = h + "<tr><td class='muted'>Time</td><td>" + esc(t.s + " - " + t.e) + "</td></tr>";
+  h = h + "<tr><td class='muted'>Class</td><td>" + esc(sectionName(sec)) + "</td></tr>";
+  h = h + "</tbody></table></div>";
+  if (canWrite()) {
+    h = h + "<div class='note'>Use Edit to change this lesson, or Move to put it in another period.</div>";
+    h = h + "<div style='display:flex;gap:8px;flex-wrap:wrap;margin-top:8px'>";
+    h = h + "<button class='sm primary' id='tvEdit'>Edit</button>";
+    h = h + "<button class='sm' id='tvMove'>Move</button>";
+    h = h + "<button class='sm bad' id='tvDel'>Clear this period</button>";
+    h = h + "</div>";
+    modal("Lesson", h, function(){ closeModal(); }, "Close");
+    if ($("tvEdit")) { $("tvEdit").onclick = function(){ closeModal(); ttEditLesson(sec, d, p); }; }
+    if ($("tvMove")) { $("tvMove").onclick = function(){ closeModal(); ttMoveLesson(sec, d, p); }; }
+    if ($("tvDel")) { $("tvDel").onclick = function(){ closeModal(); ttClearLesson(sec, d, p); }; }
+  } else {
+    modal("Lesson", h, function(){ closeModal(); }, "Close");
+  }
+}
+function ttFreeSlots(sec){
+  // Teaching periods of one section that currently hold no lesson.
+  var table = (S.timetables || {})[sec] || {};
+  var days = (S.school || {}).days || [];
+  var periods = (S.school || {}).periods || [];
+  var hol = (S.school || {}).holidays || [];
+  var blocked = (S.school || {}).unavailable || [];
+  var out = [];
+  for (var d = 0; d < days.length; d++) {
+    if (hol.indexOf(String(days[d])) >= 0) { continue; }
+    for (var p = 0; p < periods.length; p++) {
+      var t = ttTime(p);
+      if (t.k !== "lesson") { continue; }
+      if (blocked.indexOf(String(d) + "-" + String(p)) >= 0) { continue; }
+      if ((table[cellKey(d, p)] || {}).subject_id) { continue; }
+      out.push({d: d, p: p, label: days[d] + " - " + t.n + " (" + t.s + "-" + t.e + ")"});
+    }
+  }
+  return out;
+}
+function ttMoveLesson(sec, d, p){
+  var free = ttFreeSlots(sec);
+  if (free.length === 0) {
+    modal("Move lesson", "<div class='warnbox'>Every other teaching period of this class already holds a lesson, so there is nowhere to move it.</div>", function(){ closeModal(); }, "Close");
+    return;
+  }
+  var h = "<div class='muted' style='margin-bottom:10px'>" + esc(sectionName(sec)) + " - now " + esc(((S.school || {}).days || [])[d]) + " " + esc(ttTime(p).n) + "</div>";
+  h = h + "<label class='f'><span>Move to this free period</span><select id='mvTo'>";
+  for (var i = 0; i < free.length; i++) {
+    h = h + "<option value='" + free[i].d + "-" + free[i].p + "'>" + esc(free[i].label) + "</option>";
+  }
+  h = h + "</select></label>";
+  h = h + "<div class='note'>Only periods where this class is free are offered. Teacher and room clashes are checked before anything is saved.</div>";
+  modal("Move lesson", h, function(done){
+    var v = $("mvTo").value.split("-");
+    var td = parseInt(v[0], 10);
+    var tp = parseInt(v[1], 10);
+    $("mOk").disabled = true;
+    api("slot.move", {section_id: sec, from_day: d, from_period: p,
+                      to_day: td, to_period: tp}).then(function(res){
+      if (res.needs_confirm) {
+        closeModal();
+        ttConfirmMove(sec, d, p, td, tp, res.warnings || []);
+        return;
+      }
+      closeModal();
+      toast("Lesson moved", "ok");
+      refresh().then(function(){ go("timetable"); });
+    }).catch(function(e){ done(); fail(e); });
+  }, "Move");
+}
+function ttConfirmMove(sec, d, p, td, tp, warnings){
+  var h = "<div class='warnbox'><b>This move causes a conflict:</b>";
+  for (var i = 0; i < warnings.length; i++) { h = h + "<div style='margin-top:4px'>" + esc(warnings[i]) + "</div>"; }
+  h = h + "</div><div class='note'>Move it anyway? A clash would then appear on the Conflicts page.</div>";
+  modal("Confirm the conflict", h, function(done){
+    api("slot.move", {section_id: sec, from_day: d, from_period: p,
+                      to_day: td, to_period: tp, force: true}).then(function(res){
+      closeModal();
+      toast("Lesson moved with a warning", "ok");
+      refresh().then(function(){ go("timetable"); });
+    }).catch(function(e){ done(); fail(e); });
+  }, "Move anyway");
+}
+function ttEditLesson(sec, d, p){
+  var table = (S.timetables || {})[sec] || {};
+  var cur = table[cellKey(d, p)] || {};
+  var h = "<div class='muted' style='margin-bottom:12px'>" + esc(sectionName(sec)) + " - " + esc(((S.school || {}).days || [])[d]) + " " + esc(ttTime(p).n) + " " + esc(ttTime(p).s + "-" + ttTime(p).e) + "</div>";
+  h = h + "<label class='f'><span>Subject</span><select id='slSub'><option value=''>- free period -</option>" + optionsFor(S.subjects, cur.subject_id || "") + "</select></label>";
+  h = h + "<label class='f'><span>Teacher</span><select id='slTch'><option value=''>- none -</option>" + optionsFor(S.teachers, cur.teacher_id || "") + "</select></label>";
+  h = h + "<label class='f'><span>Classroom</span><select id='slRoom'><option value=''>- none -</option>" + optionsFor(S.rooms, cur.room_id || "") + "</select></label>";
+  h = h + "<div id='slWarn'></div>";
+  modal("Edit lesson", h, function(done){
+    var sub = $("slSub").value;
+    var tch = $("slTch").value;
+    var rm = $("slRoom").value;
+    var warns = ttLocalWarnings(sec, d, p, tch, rm);
+    var apply = function(){
+      api("slot.set", {section_id: sec, day: d, period: p, subject_id: sub,
+                       teacher_id: tch, room_id: rm}).then(function(res){
+        closeModal();
+        if (sub === "") { toast("Period cleared", "ok"); }
+        else { toast("Lesson saved", "ok"); }
+        refresh().then(function(){ go("timetable"); });
+      }).catch(function(e){ done(); fail(e); });
+    };
+    if (warns.length > 0) {
+      closeModal();
+      ttConfirmEdit(sec, d, p, sub, tch, rm, warns);
+      return;
+    }
+    apply();
+  }, "Save");
+}
+function ttLocalWarnings(sec, d, p, tch, rm){
+  // Warnings the browser can work out before the server is asked.
+  var warn = [];
+  var k = cellKey(d, p);
+  var days = (S.school || {}).days || [];
+  for (var sid in (S.timetables || {})) {
+    if (sid === sec) { continue; }
+    var sl = ((S.timetables[sid] || {})[k] || {});
+    if (!sl.subject_id) { continue; }
+    if (tch !== "" && String(sl.teacher_id) === String(tch)) {
+      warn.push(nameOf(S.teachers, tch) + " already teaches " + sectionName(sid) + " at this time.");
+    }
+    if (rm !== "" && String(sl.room_id) === String(rm)) {
+      warn.push(nameOf(S.rooms, rm) + " is already used by " + sectionName(sid) + " at this time.");
+    }
+  }
+  if (tch !== "") {
+    var tr = tById(S.teachers, tch);
+    var un = ((tr || {}).unavailable) || [];
+    if (un.indexOf(k) >= 0) { warn.push(nameOf(S.teachers, tch) + " is marked unavailable at this time."); }
+  }
+  return warn;
+}
+
+function ttConfirmEdit(sec, d, p, sub, tch, rm, warns){
+  var h = "<div class='warnbox'><b>Check before saving:</b>";
+  for (var i = 0; i < warns.length; i++) { h = h + "<div style='margin-top:4px'>" + esc(warns[i]) + "</div>"; }
+  h = h + "</div><div class='note'>Save anyway? The conflict will then be listed on the Conflicts page.</div>";
+  modal("Confirm the conflict", h, function(done){
+    api("slot.set", {section_id: sec, day: d, period: p, subject_id: sub,
+                     teacher_id: tch, room_id: rm}).then(function(){
+      closeModal();
+      toast("Lesson saved with a warning", "ok");
+      refresh().then(function(){ go("timetable"); });
+    }).catch(function(e){ done(); fail(e); });
+  }, "Save anyway");
+}
+function ttClearLesson(sec, d, p){
+  modal("Clear this period", "<div class='errbox'>Remove the lesson from " + esc(sectionName(sec)) + " on " + esc(((S.school || {}).days || [])[d]) + " " + esc(ttTime(p).n) + "?</div>", function(done){
+    api("slot.set", {section_id: sec, day: d, period: p, subject_id: "", teacher_id: "", room_id: ""}).then(function(){
+      closeModal();
+      toast("Period cleared", "ok");
+      refresh().then(function(){ go("timetable"); });
+    }).catch(function(e){ done(); fail(e); });
+  }, "Clear");
 }
 document.addEventListener("DOMContentLoaded", function(){
   // Tell Telegram the page is ready and let it use the full height.
