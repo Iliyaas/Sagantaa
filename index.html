@@ -86,6 +86,52 @@ tbody tr:hover{background: #1f2839;}
 .slot.off{background: #10161f; border: 1px solid #1c2532; cursor: default; opacity: 0.75;}
 .slot.off:hover{background: #10161f; border-color: #1c2532;}
 .slot.off small{color: #5a6b85; font-style: italic;}
+/* ---- printable one-page school timetable ---- */
+.ptwrap{overflow-x: auto;}
+.ptsheet{background: #fff; color: #10161f; padding: 10px; border-radius: 6px; min-width: 900px;}
+.pt-head{display: flex; align-items: center; gap: 10px; border: 1px solid #767e94; background: #f5f7fb; padding: 6px 8px; margin-bottom: 6px;}
+.pt-head .ptlogo{font-size: 20px; line-height: 1;}
+.pt-head h1{font-size: 15px; margin: 0; letter-spacing: .3px; text-transform: uppercase;}
+.pt-head .ptsub{font-size: 9.5px; color: #3a4658;}
+.pt-head .ptyr{font-size: 9.5px; color: #3a4658;}
+table.pt{width: 100%; border-collapse: collapse; table-layout: fixed;}
+table.pt th, table.pt td{border: 1px solid #767e94; padding: 1px 2px; text-align: center; vertical-align: middle;}
+table.pt thead th{background: #1f3a5f; color: #fff; font-size: 8.6px; padding: 3px 2px;}
+table.pt thead th.ptcls{background: #eef4fc; color: #10161f; font-size: 8.4px;}
+table.pt td.ptday{width: 22px; font-size: 8.6px; font-weight: 700; writing-mode: vertical-rl; transform: rotate(180deg); background: #fff;}
+table.pt tr.ptodd td.ptper{background: #ecf1f9;}
+table.pt td.ptper{width: 46px; font-size: 8.2px; font-weight: 700;}
+table.pt td.ptper small{display: block; font-size: 6.6px; font-weight: 400; color: #5a6880;}
+table.pt td.ptfree{background: #fafafa;}
+.ptcell{padding: 1px 2px; font-size: 8.2px; line-height: 1.15;}
+.ptcell b{display: block; font-size: 8.6px;}
+.ptcell i{display: block; font-style: normal; font-size: 7.2px; color: #24304a;}
+.ptsum{margin-top: 8px;}
+.ptsum h2{font-size: 10px; margin: 0 0 4px 0; text-transform: uppercase; color: #1f3a5f;}
+table.ptsumt{width: 100%; border-collapse: collapse;}
+table.ptsumt th, table.ptsumt td{border: 1px solid #767e94; padding: 2px 4px; font-size: 8.4px; text-align: left;}
+table.ptsumt thead th{background: #1f3a5f; color: #fff; font-size: 8.4px;}
+table.ptsumt td.c{text-align: center;}
+table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
+.ptfoot{display: flex; gap: 12px; margin-top: 12px;}
+.ptfoot div{flex: 1; font-size: 8.6px;}
+.ptfoot .ptline{border-bottom: 1px solid #10161f; height: 14px; margin-top: 2px;}
+.ptfoot .ptval{font-size: 8.2px; color: #24304a;}
+.ptsheet.bw table.pt td, .ptsheet.bw table.pt th.ptcls, .ptsheet.bw table.ptsumt tr:nth-child(even) td{background: #fff !important;}
+.ptsheet.bw table.pt thead th, .ptsheet.bw table.ptsumt thead th{background: #fff; color: #10161f; border-bottom-width: 2px;}
+.ptsheet.bw .ptcell i{color: #10161f;}
+@media print{
+  @page{size: A4 landscape; margin: 8mm;}
+  body{background: #fff !important;}
+  #side, #mnav, #toast, #splash, #modal, .tabs, .topline, .ptctl, .navi{display: none !important;}
+  #app{display: block !important;}
+  main#main{display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important;}
+  .card{border: none !important; background: none !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important;}
+  .ptwrap{overflow: visible !important;}
+  .ptsheet{min-width: 0 !important; padding: 0 !important; border-radius: 0 !important;}
+  table.pt{page-break-inside: avoid;}
+  *{-webkit-print-color-adjust: exact; print-color-adjust: exact;}
+}
 .lcard{min-height: 58px; border-radius: 9px; background: #172238; border: 1px solid #2b4570; padding: 5px 7px; cursor: pointer; display: flex; flex-direction: column; gap: 1px;}
 .lcard:hover{border-color: var(--acc); background: #1b2942;}
 .lcard b{font-size: 12px; font-weight: 650; line-height: 1.2;}
@@ -217,7 +263,7 @@ tbody tr:hover{background: #1f2839;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6Ocs15E-iD2oVp9Ol1h2JcYBMz8_rdwM5MZAro2kF_0bdlFD5kS01bgY4IpTVLwMkTIUj3In0wrkgxPyRofopZYu1yqwmw9qXcMW7mw6vYYAN9s5vqg9x1bTlyE4O7guKCHjKrhnr16tiIG2VeZmo_b_6KN_7tsXXBag2hYYZB0qG3LY4n3HKIzxKizJ8JnM8pZz";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6QyC0ch1jXojURkFLE-MMfxsAN5J7ZHLVTLdtmmvUgFK4iH5rc1Bza0vODEKBLzcp0JiMMtOVe_izuGehEfQtcTRRhelTQRln_1TpygLUqBgWl116opq9OsoImuOf08VdH4ToZibaT8UsFvuVv-DD-OE6qYsRkm_D7MaAt9NsDoIIvjEU4FKuhs0mWsmSgu-I58D";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -413,6 +459,7 @@ var NAV = [
   {id: "generate", ic: "\u2692", label: "Generate Timetable"},
   {id: "timetable", ic: "\u25A6", label: "View Timetable"},
   {id: "export", ic: "\u2913", label: "Export"},
+  {id: "print", ic: "\u2316", label: "Print School Timetable"},
   {id: "school", ic: "\u2691", label: "Settings"}
 ];
 var MNAV = [
@@ -519,6 +566,7 @@ function go(v){
   else if (v === "timetable") { ttPage(); }
   else if (v === "conflicts") { confView(); }
   else if (v === "export") { expView(); }
+  else if (v === "print") { printView(); }
   else if (v === "admins") { admView(); }
   bindTabs();
 }
@@ -920,6 +968,12 @@ function settingsView(){
   h = h + "<div class='card'><h2>Periods<span>name, start, end</span></h2><div id='perBox'></div>";
   if (isWrite()) { h = h + "<button class='sm' id='btnAddPer'>+ Add period</button>"; }
   h = h + "</div>";
+  h = h + "<div class='card'><h2>Printed names and day labels<span>used on the one-page school timetable</span></h2>";
+  h = h + "<div class='row'><label class='f'><span>Prepared by</span><input id='scPrep' value='" + esc(S.school.prepared_by || "") + "' maxlength='60'" + rd + "></label>";
+  h = h + "<label class='f'><span>Approved by</span><input id='scAppr' value='" + esc(S.school.approved_by || "") + "' maxlength='60'" + rd + "></label></div>";
+  h = h + "<label class='f'><span>School director</span><input id='scDir' value='" + esc(S.school.director || "") + "' maxlength='60'" + rd + "></label>";
+  h = h + "<label class='f'><span>Printed day names<span class='muted'> one per line, in the same order as the school days; leave empty to use the built-in Afaan Oromoo names</span></span><textarea id='scDayLabels' rows='6'" + rd + ">" + esc((S.school.day_labels || []).join("\n")) + "</textarea></label>";
+  h = h + "</div>";
   if (isWrite()) { h = h + "<button class='primary' id='btnSaveSc'>Save settings</button>"; }
   $("main").innerHTML = h;
   PERIODS = [];
@@ -975,6 +1029,18 @@ function settingsView(){
       }
       var school = {name: nm, days: clean, periods: PERIODS, logo_emoji: $("scEmoji").value.trim()};
       if (LOGO_IMG !== null) { school.logo_img = LOGO_IMG; }
+      if ($("scPrep")) { school.prepared_by = $("scPrep").value.trim(); }
+      if ($("scAppr")) { school.approved_by = $("scAppr").value.trim(); }
+      if ($("scDir")) { school.director = $("scDir").value.trim(); }
+      if ($("scDayLabels")) {
+        var raw = $("scDayLabels").value.split("\n");
+        var lbl = [];
+        for (var z = 0; z < raw.length; z++) {
+          var zz = raw[z].trim();
+          if (zz !== "") { lbl.push(zz); }
+        }
+        school.day_labels = lbl;
+      }
       splash(true);
       api("settings.save", {school: school}).then(function(d){
         splash(false);
@@ -1705,6 +1771,167 @@ function saveBlob(blob, filename){
   if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
     try { window.Telegram.WebApp.HapticFeedback.notificationOccurred("success"); } catch (e) {}
   }
+}
+// ---------------- one-page printable school timetable ----------------
+var PRINT_DATA = null;
+var PRINT_OPT = {lang: "om", bw: false, show_times: true, show_room: true, grade: ""};
+
+function printCtlHtml(){
+  var h = "<div class='card ptctl'><h2>Print options</h2>";
+  h = h + "<div class='row'>";
+  h = h + "<label class='f'><span>Day names</span><select id='pLang'>";
+  h = h + "<option value='om'" + (PRINT_OPT.lang === "om" ? " selected" : "") + ">Afaan Oromoo (Wixata...)</option>";
+  h = h + "<option value='both'" + (PRINT_OPT.lang === "both" ? " selected" : "") + ">Oromoo with English</option>";
+  h = h + "<option value='en'" + (PRINT_OPT.lang === "en" ? " selected" : "") + ">English</option>";
+  h = h + "</select></label>";
+  h = h + "<label class='f'><span>Grade</span><select id='pGrade'><option value=''>All grades</option>";
+  for (var i = 0; i < (S.classes || []).length; i++) {
+    var c = S.classes[i];
+    h = h + "<option value='" + esc(c.id) + "'" + (PRINT_OPT.grade === c.id ? " selected" : "") + ">" + esc(c.name) + "</option>";
+  }
+  h = h + "</select></label></div>";
+  h = h + "<label class='chk'><input type='checkbox' id='pTimes'" + (PRINT_OPT.show_times ? " checked" : "") + "><span>Show lesson times on the page</span></label>";
+  h = h + "<label class='chk'><input type='checkbox' id='pRoom'" + (PRINT_OPT.show_room ? " checked" : "") + "><span>Show classrooms in the cells</span></label>";
+  h = h + "<label class='chk'><input type='checkbox' id='pBw'" + (PRINT_OPT.bw ? " checked" : "") + "><span>Print in black and white (saves colour ink)</span></label>";
+  h = h + "<div style='margin-top:12px;display:flex;gap:8px;flex-wrap:wrap'>";
+  h = h + "<button class='primary' id='pPdf'>Download PDF</button>";
+  h = h + "<button id='pPrint'>Print</button>";
+  h = h + "<button class='ghost' id='pPrev'>Preview</button>";
+  h = h + "<button class='ghost' id='pBack'>Back to timetable</button>";
+  h = h + "</div>";
+  h = h + "<div id='pMsg' style='margin-top:10px'></div>";
+  return h + "</div>";
+}
+function printOptsSend(){
+  var o = {lang: PRINT_OPT.lang, bw: PRINT_OPT.bw,
+           show_times: PRINT_OPT.show_times, show_room: PRINT_OPT.show_room};
+  // The class id is sent rather than a grade name, because a school may leave
+  // the grade field blank and the id always identifies the class.
+  if (PRINT_OPT.grade !== "") { o.class_id = PRINT_OPT.grade; }
+  return o;
+}
+function printCellHtml(cell){
+  if (!cell) { return "<td class='ptfree'></td>"; }
+  var bg = PRINT_OPT.bw ? "" : (" style='background:#" + esc(cell.color) + "'");
+  var h = "<td" + bg + "><div class='ptcell'><b>" + esc(cell.s) + "</b>";
+  var line2 = "";
+  if (cell.t) { line2 = line2 + cell.t; }
+  if (cell.x) { line2 = line2 + (line2 ? " / " : "") + cell.x; }
+  if (PRINT_OPT.show_room && cell.r) { line2 = line2 + (line2 ? "  " : "") + cell.r; }
+  if (line2 !== "") { h = h + "<i>" + esc(line2) + "</i>"; }
+  return h + "</div></td>";
+}
+function printSheetHtml(d){
+  var cls = d.classes || [];
+  if (cls.length === 0) {
+    return "<div class='ptsheet'><div class='empty'>No class has a timetable yet.</div></div>";
+  }
+  var h = "<div class='ptsheet" + (PRINT_OPT.bw ? " bw" : "") + "'>";
+  h = h + "<div class='pt-head'>";
+  if (d.logo) { h = h + "<div class='ptlogo'>" + esc(d.logo) + "</div>"; }
+  h = h + "<div style='flex:1'><h1>" + esc(d.school || "School") + "</h1>";
+  h = h + "<div class='ptsub'>SCHOOL WEEKLY TIMETABLE &nbsp;/&nbsp; TURAAGA BARNOOTAA TORBAANII</div>";
+  h = h + "<div class='ptyr'>Academic year / Bara Barnootaa: " + esc(d.year || "-") + "</div></div></div>";
+
+  h = h + "<table class='pt'><thead><tr>";
+  h = h + "<th rowspan='2' style='width:24px'>Guyyoota<br>Torbaanii</th>";
+  h = h + "<th rowspan='2' style='width:48px'>" + (PRINT_OPT.show_times ? "Yeroo" : "Walmi") + "</th>";
+  h = h + "<th colspan='" + cls.length + "'>Daree Barnootaa</th></tr><tr>";
+  for (var i = 0; i < cls.length; i++) {
+    h = h + "<th class='ptcls'>" + esc(cls[i].label) + "</th>";
+  }
+  h = h + "</tr></thead><tbody>";
+  var days = d.days || [];
+  for (var di = 0; di < days.length; di++) {
+    var dg = days[di];
+    var rows = dg.rows || [];
+    if (rows.length === 0) { continue; }
+    for (var rj = 0; rj < rows.length; rj++) {
+      var row = rows[rj];
+      h = h + "<tr" + (di % 2 === 1 ? " class='ptodd'" : "") + ">";
+      if (rj === 0) {
+        var lbl = "<span>" + esc(dg.name) + "</span>";
+        h = h + "<td class='ptday' rowspan='" + rows.length + "'>" + lbl + "</td>";
+      }
+      h = h + "<td class='ptper'>" + esc(row.label);
+      if (PRINT_OPT.show_times) {
+        h = h + "<small>" + esc(row.start) + "-" + esc(row.end) + "</small>";
+      }
+      h = h + "</td>";
+      var cells = row.cells || [];
+      for (var ci = 0; ci < cls.length; ci++) {
+        h = h + printCellHtml(cells[ci] || null);
+      }
+      h = h + "</tr>";
+    }
+  }
+  h = h + "</tbody></table>";
+
+  var tch = d.teachers || [];
+  h = h + "<div class='ptsum'><h2>Teacher workload and subject assignment summary</h2>";
+  h = h + "<table class='ptsumt'><thead><tr><th style='width:26px'>T.L</th><th style='width:130px'>Maqaa Guutuu Barsiisota</th><th>Gosa Barnootaarsa Barsiisu</th><th style='width:56px'>Baay'ina Wajii</th></tr></thead><tbody>";
+  if (tch.length === 0) {
+    h = h + "<tr><td colspan='4' class='muted'>No teachers are recorded.</td></tr>";
+  }
+  for (var ti = 0; ti < tch.length; ti++) {
+    var t = tch[ti];
+    h = h + "<tr><td class='c'>" + (ti + 1) + "</td><td><b>" + esc(t.name || "-") + "</b></td>";
+    h = h + "<td>" + esc(t.assign || "-") + "</td><td class='c'><b>" + (t.total || 0) + "</b></td></tr>";
+  }
+  h = h + "</tbody></table></div>";
+
+  h = h + "<div class='ptfoot'>";
+  h = h + "<div><span>Prepared by / Qopheessan</span><div class='ptline'></div><div class='ptval'>" + esc(d.prepared || "") + "</div></div>";
+  h = h + "<div><span>Approved by / Raggaasisan</span><div class='ptline'></div><div class='ptval'>" + esc(d.approved || "") + "</div></div>";
+  h = h + "<div><span>School Director</span><div class='ptline'></div><div class='ptval'>" + esc(d.director || "") + "</div></div>";
+  h = h + "<div><span>Date / Guyyaa</span><div class='ptline'></div><div class='ptval'></div></div>";
+  return h + "</div></div>";
+}
+function printLoad(){
+  $("pSheet").innerHTML = "<div class='card'><div class='empty'>Building the printable page...</div></div>";
+  api("print.data", {print_opts: printOptsSend()}).then(function(d){
+    PRINT_DATA = d.data;
+    $("pSheet").innerHTML = printSheetHtml(d.data);
+    var n = (d.data && d.data.lessons) || 0;
+    $("pMsg").innerHTML = "<div class='note'>" + n + " saved lesson(s), " +
+      ((d.data && d.data.classes || []).length) + " class column(s), " +
+      ((d.data && d.data.teachers || []).length) + " teacher(s). The PDF is one A4 landscape page.</div>";
+  }).catch(function(e){
+    $("pSheet").innerHTML = "";
+    PRINT_DATA = null;
+    fail(e);
+  });
+}
+function printView(){
+  var h = head("Print School Timetable", "One A4 landscape page: the whole school grid plus the teacher workload summary");
+  h = h + printCtlHtml();
+  h = h + "<div id='pSheet'></div>";
+  $("main").innerHTML = h;
+  $("pLang").onchange = function(){ PRINT_OPT.lang = this.value; printLoad(); };
+  $("pGrade").onchange = function(){ PRINT_OPT.grade = this.value; printLoad(); };
+  $("pTimes").onchange = function(){ PRINT_OPT.show_times = this.checked; printLoad(); };
+  $("pRoom").onchange = function(){ PRINT_OPT.show_room = this.checked; printLoad(); };
+  $("pBw").onchange = function(){ PRINT_OPT.bw = this.checked; printLoad(); };
+  $("pPrev").onclick = function(){ printLoad(); };
+  $("pBack").onclick = function(){ go("timetable"); };
+  $("pPrint").onclick = function(){
+    if (!PRINT_DATA) { toast("Wait for the preview to appear first.", "err"); return; }
+    window.print();
+  };
+  $("pPdf").onclick = function(){
+    if (!PRINT_DATA) { toast("Wait for the preview to appear first.", "err"); return; }
+    $("pMsg").innerHTML = "<div class='muted'>Building the PDF...</div>";
+    api("print.pdf", {print_opts: printOptsSend()}).then(function(d){
+      var content = d.content || "";
+      var bin = atob(content);
+      var bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) { bytes[i] = bin.charCodeAt(i); }
+      saveBlob(new Blob([bytes], {type: d.mime || "application/pdf"}), d.filename);
+      $("pMsg").innerHTML = "<div class='note'>Saved " + esc(d.filename) + " - " +
+        (d.lessons || 0) + " lesson(s) on one A4 landscape page. Check your downloads.</div>";
+    }).catch(function(e){ $("pMsg").innerHTML = ""; fail(e); });
+  };
+  printLoad();
 }
 function roleSelectHtml(cur){
   var rs = [["super_admin", "Super administrator"], ["school_admin", "School administrator"],
