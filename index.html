@@ -86,6 +86,44 @@ tbody tr:hover{background: #1f2839;}
 .slot.off{background: #10161f; border: 1px solid #1c2532; cursor: default; opacity: 0.75;}
 .slot.off:hover{background: #10161f; border-color: #1c2532;}
 .slot.off small{color: #5a6b85; font-style: italic;}
+/* ---- whole school grid ---- */
+.schwrap{overflow: auto; max-height: 74vh; border: 1px solid #23314a; border-radius: 10px;}
+table.sch{border-collapse: separate; border-spacing: 0; width: 100%;}
+table.sch th, table.sch td{border-right: 1px solid #22304a; border-bottom: 1px solid #22304a; padding: 0;}
+table.sch thead th{position: sticky; top: 0; z-index: 6; background: #16243a; color: #dfe8f6;
+  font-size: 11px; font-weight: 650; padding: 6px 4px; text-align: center; white-space: nowrap;}
+table.sch thead th.cday{left: 0; z-index: 8; min-width: 76px;}
+table.sch thead th.cper{left: 76px; z-index: 8; min-width: 42px;}
+table.sch td.cday{position: sticky; left: 0; z-index: 5; background: #101a2b; color: #cfe0f5;
+  font-size: 11px; font-weight: 650; text-align: center; padding: 4px 3px; writing-mode: vertical-rl;
+  transform: rotate(180deg); white-space: nowrap;}
+table.sch td.cper{position: sticky; left: 76px; z-index: 5; background: #101a2b; color: #cfe0f5;
+  font-size: 10.5px; font-weight: 650; text-align: center; padding: 3px 2px; white-space: nowrap;}
+table.sch td.cper small{display: block; font-size: 8.5px; font-weight: 400; color: #7f93b3;}
+table.sch td.cellb{padding: 2px; vertical-align: top;}
+table.sch tr.altday td.cday, table.sch tr.altday td.cper{background: #14203a;}
+.slcard{border-radius: 6px; padding: 3px 4px; min-height: 30px; font-size: 10.5px; line-height: 1.15;
+  color: #10161f; border: 1px solid rgba(0,0,0,.18); cursor: pointer; overflow: hidden;}
+.slcard b{display: block; font-size: 11px; font-weight: 700;}
+.slcard small{display: block; font-size: 9px; font-weight: 600; opacity: .85;}
+.slcard .sroom{display: block; font-size: 8.5px; opacity: .7;}
+.slcard:hover{outline: 2px solid var(--acc);}
+.slfree{min-height: 30px; border-radius: 6px; background: #0f1725; border: 1px dashed #22304a;
+  display: flex; align-items: center; justify-content: center; font-size: 9px; color: #4a5c78;}
+.slbrk{min-height: 30px; border-radius: 6px; background: #131b28; color: #6b7d99; font-size: 9.5px;
+  display: flex; align-items: center; justify-content: center; font-style: italic;}
+.schoolsummary{font-size: 12px; color: #93a1bb; margin-top: 8px;}
+@media (max-width: 620px){
+  .schwrap{max-height: 68vh;}
+  table.sch thead th{font-size: 10px; padding: 5px 2px;}
+  table.sch thead th.cday{min-width: 58px;} table.sch thead th.cper, table.sch td.cper{left: 58px;}
+  table.sch thead th.cper{min-width: 34px;}
+  .slcard{font-size: 9.5px; padding: 2px 3px; min-height: 26px;}
+  .slcard b{font-size: 10px;}
+  .slcard small{font-size: 8.5px;}
+  .slcard .sroom{display: none;}
+  .slfree, .slbrk{min-height: 26px;}
+}
 /* ---- printable one-page school timetable ---- */
 .ptwrap{overflow-x: auto;}
 .ptsheet{background: #fff; color: #10161f; padding: 10px; border-radius: 6px; min-width: 900px;}
@@ -263,7 +301,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6QyC0ch1jXojURkFLE-MMfxsAN5J7ZHLVTLdtmmvUgFK4iH5rc1Bza0vODEKBLzcp0JiMMtOVe_izuGehEfQtcTRRhelTQRln_1TpygLUqBgWl116opq9OsoImuOf08VdH4ToZibaT8UsFvuVv-DD-OE6qYsRkm_D7MaAt9NsDoIIvjEU4FKuhs0mWsmSgu-I58D";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6RrFQvCRKua5EmPYuumYZzCgEIYRc4qhJcmkFpVtiOw--JQ0ukdeiExlQZIHoqWcnwMmhhdpiFFu8Yow1YZtW5jNwpQ1znTeHyPjk__-R5YDEl5GiXywbh9M6AqAPTyOvLf_NxJCit9-ofY-kq9uzn_DN7sdS95dgJfdI_lBzUluS5zjGr9PG6xF72woPaZLl8us";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -1398,7 +1436,25 @@ function ttView(){
   drawGrid();
 }
 var TT_MODE = "sec";
-var TT_F = {teacher: "", day: "", subject: "", q: "", view: "week", daySel: 0};
+// The timetable page opens on the whole school: every class together.
+var TT_F = {teacher: "", day: "", subject: "", q: "", view: "school", daySel: 0};
+function ttViewLabel(){
+  if (TT_F.view === "school") { return "whole school"; }
+  if (TT_F.view === "day") { return "daily view"; }
+  if (TT_F.view === "teach") { return "teacher view"; }
+  return "class view";
+}
+function ttRefreshControls(){
+  // Redraw the filter bar so the active view button and class list stay honest.
+  if (!$("main")) { return; }
+  var box = $("main").querySelector(".card");
+  if (!box) { return; }
+  var h = ttFiltersHtml();
+  var tmp = document.createElement("div");
+  tmp.innerHTML = h;
+  box.parentNode.replaceChild(tmp.firstChild, box);
+  ttBindFilters();
+}
 function cellKey(d, p){ return d + "-" + p; }
 function ttTime(p){
   var pp = ((S.school || {}).periods || [])[p] || {};
@@ -1794,11 +1850,14 @@ function printCtlHtml(){
   h = h + "<label class='chk'><input type='checkbox' id='pRoom'" + (PRINT_OPT.show_room ? " checked" : "") + "><span>Show classrooms in the cells</span></label>";
   h = h + "<label class='chk'><input type='checkbox' id='pBw'" + (PRINT_OPT.bw ? " checked" : "") + "><span>Print in black and white (saves colour ink)</span></label>";
   h = h + "<div style='margin-top:12px;display:flex;gap:8px;flex-wrap:wrap'>";
-  h = h + "<button class='primary' id='pPdf'>Download PDF</button>";
+  h = h + "<button class='primary' id='pSend'>Send PDF to Telegram</button>";
   h = h + "<button id='pPrint'>Print</button>";
   h = h + "<button class='ghost' id='pPrev'>Preview</button>";
+  h = h + "<button class='ghost' id='pDev'>Download directly to device</button>";
   h = h + "<button class='ghost' id='pBack'>Back to timetable</button>";
   h = h + "</div>";
+  h = h + "<div class='note' style='margin-top:8px'>The PDF is delivered by the bot to your own Telegram chat. "
+       + "It is never downloaded to this phone unless you choose Download directly to device.</div>";
   h = h + "<div id='pMsg' style='margin-top:10px'></div>";
   return h + "</div>";
 }
@@ -1887,6 +1946,58 @@ function printSheetHtml(d){
   h = h + "<div><span>Date / Guyyaa</span><div class='ptline'></div><div class='ptval'></div></div>";
   return h + "</div></div>";
 }
+var PDF_SENDING = false;
+function pdfStatusHtml(kind, text, withRetry){
+  var cls = "note";
+  if (kind === "err") { cls = "errbox"; }
+  else if (kind === "busy") { cls = "muted"; }
+  var h = "<div class='" + cls + "'>" + esc(text);
+  if (withRetry) {
+    h = h + "<div style='margin-top:8px'><button class='sm primary' id='pRetry'>Retry</button></div>";
+  }
+  return h + "</div>";
+}
+function pdfShowStatus(kind, text, withRetry){
+  if (!$("pMsg")) { return; }
+  $("pMsg").innerHTML = pdfStatusHtml(kind, text, withRetry);
+  if (withRetry && $("pRetry")) { $("pRetry").onclick = function(){ sendPdfToTelegram(); }; }
+  if ($("pSend")) { $("pSend").disabled = PDF_SENDING; }
+}
+function sendPdfToTelegram(){
+  // The bot delivers the file to this user's own Telegram chat. Repeated taps
+  // while the first request is still running are ignored on purpose, so the
+  // same PDF cannot be delivered twice.
+  if (PDF_SENDING) { return; }
+  if (!PRINT_DATA) {
+    pdfShowStatus("err", "Wait for the preview to appear first, then press Send again.", false);
+    return;
+  }
+  PDF_SENDING = true;
+  pdfShowStatus("busy", "Sending PDF to Telegram...", false);
+  api("print.send", {print_opts: printOptsSend()}).then(function(d){
+    PDF_SENDING = false;
+    if (d && d.sent) {
+      var msg = "PDF sent successfully! Open your Telegram bot chat to download it.";
+      if (d.duplicate) {
+        msg = "This PDF was just sent. Open your Telegram bot chat to download it.";
+      }
+      pdfShowStatus("ok", msg + " (" + (d.filename || "School timetable") + ")", false);
+      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+        try { window.Telegram.WebApp.HapticFeedback.notificationOccurred("success"); } catch (e) {}
+      }
+    } else {
+      var why = (d && d.error) ? String(d.error) : "Unable to send PDF. Please try again.";
+      pdfShowStatus("err", why, true);
+    }
+    if ($("pSend")) { $("pSend").disabled = false; }
+  }).catch(function(e){
+    PDF_SENDING = false;
+    var m = "Unable to send PDF. Please try again.";
+    if (e && e.message) { m = String(e.message); }
+    pdfShowStatus("err", m, true);
+    if ($("pSend")) { $("pSend").disabled = false; }
+  });
+}
 function printLoad(){
   $("pSheet").innerHTML = "<div class='card'><div class='empty'>Building the printable page...</div></div>";
   api("print.data", {print_opts: printOptsSend()}).then(function(d){
@@ -1918,7 +2029,8 @@ function printView(){
     if (!PRINT_DATA) { toast("Wait for the preview to appear first.", "err"); return; }
     window.print();
   };
-  $("pPdf").onclick = function(){
+  $("pSend").onclick = function(){ sendPdfToTelegram(); };
+  $("pDev").onclick = function(){
     if (!PRINT_DATA) { toast("Wait for the preview to appear first.", "err"); return; }
     $("pMsg").innerHTML = "<div class='muted'>Building the PDF...</div>";
     api("print.pdf", {print_opts: printOptsSend()}).then(function(d){
@@ -3705,12 +3817,20 @@ function ttFiltersHtml(){
   var days = (S.school || {}).days || [];
   var dayOpts = [];
   for (var d = 0; d < days.length; d++) { dayOpts.push({id: String(d), name: days[d]}); }
-  var h = "<div class='card'><h2>Find lessons<span>" + ttVisible().length + " shown</span></h2>";
-  h = h + "<div class='tfilters'>";
+  var h = "<div class='card'><h2>View<span>" + esc(ttViewLabel()) + "</span></h2>";
+  h = h + "<div style='display:flex;gap:8px;flex-wrap:wrap;align-items:center'>";
+  h = h + "<button class='sm" + (TT_F.view === "school" ? " primary" : "") + "' id='ttVSchool'>Whole School</button>";
+  h = h + "<button class='sm" + (TT_F.view === "week" ? " primary" : "") + "' id='ttVWeek'>Class View</button>";
+  h = h + "<button class='sm" + (TT_F.view === "teach" ? " primary" : "") + "' id='ttVTeach'>Teacher View</button>";
+  h = h + "<button class='sm" + (TT_F.view === "day" ? " primary" : "") + "' id='ttVDay'>Daily View</button>";
+  h = h + "<button class='sm" + ((TT_F.view === "school" || TT_F.view === "week") ? " primary" : "") + "' id='ttVWeekly'>Weekly View</button>";
+  h = h + "<button class='sm ghost' id='ttReload'>Refresh</button>";
+  h = h + "</div>";
+  h = h + "<div class='tfilters' style='margin-top:12px'>";
   if (ttReadOnly()) {
-    h = h + "<div class='f'><span>Class</span><div class='muted' style='padding-top:6px'>" + esc(TT_SECTION ? sectionName(TT_SECTION) : "your own lessons") + "</div></div>";
+    h = h + "<div class='f'><span>Class</span><div class='muted' style='padding-top:6px'>" + esc(TT_SECTION ? sectionName(TT_SECTION) : "whole school") + "</div></div>";
   } else {
-    h = h + ttSelect("ttFClass", "Class", secs, TT_SECTION, "Whole school");
+    h = h + ttSelect("ttFClass", "Class view", secs, TT_SECTION, "Whole school (all classes)");
     h = h + ttSelect("ttFTeacher", "Teacher", S.teachers || [], TT_F.teacher, "Any teacher");
     h = h + ttSelect("ttFSubject", "Subject", S.subjects || [], TT_F.subject, "Any subject");
     h = h + ttSelect("ttFDay", "Day", dayOpts, TT_F.day, "Every day");
@@ -3718,12 +3838,15 @@ function ttFiltersHtml(){
   h = h + "<label class='f'><span>Search</span><input id='ttFQ' value='" + esc(TT_F.q) + "' placeholder='subject, teacher or room'></label>";
   h = h + "</div>";
   h = h + "<div style='margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center'>";
-  h = h + "<button class='sm" + (TT_F.view === "week" ? " primary" : "") + "' id='ttVWeek'>Weekly view</button>";
-  h = h + "<button class='sm" + (TT_F.view === "day" ? " primary" : "") + "' id='ttVDay'>Daily view</button>";
   h = h + "<button class='sm ghost' id='ttClearF'>Clear filters</button>";
-  h = h + "<button class='sm ghost' id='ttReload'>Refresh</button>";
+  h = h + "<button class='sm primary' id='ttPrint'>Print whole school</button>";
+  h = h + "<button class='sm' id='ttPdf'>Export PDF</button>";
   if (canWrite()) { h = h + "<button class='sm ghost' id='ttGoGen'>Generate</button>"; }
-  h = h + "</div></div>";
+  h = h + "</div>";
+  if (TT_F.view === "school") {
+    h = h + "<div class='note' style='margin-top:10px'>Every class is shown together. The filters above only highlight matching lessons; they never hide a class.</div>";
+  }
+  h = h + "</div>";
   return h;
 }
 function ttReadOnly(){
@@ -3733,15 +3856,35 @@ function ttBindFilters(){
   function on(id, fn){
     if ($(id)) { $(id).onchange = fn; }
   }
-  on("ttFClass", function(){ TT_SECTION = this.value; ttRender(); });
+  on("ttFClass", function(){
+    // Choosing a class switches to that class's own view; Whole School remains
+    // the default and is one tap away.
+    if (this.value === "") { TT_F.view = "school"; TT_SECTION = ""; }
+    else { TT_SECTION = this.value; TT_F.view = "week"; }
+    ttRender();
+    ttRefreshControls();
+  });
   on("ttFTeacher", function(){ TT_F.teacher = this.value; ttRender(); });
   on("ttFSubject", function(){ TT_F.subject = this.value; ttRender(); });
   on("ttFDay", function(){ TT_F.day = this.value; ttRender(); });
   if ($("ttFQ")) {
     $("ttFQ").oninput = function(){ TT_F.q = this.value; ttRender(); if ($("ttFQ")) { $("ttFQ").focus(); } };
   }
-  if ($("ttVWeek")) { $("ttVWeek").onclick = function(){ TT_F.view = "week"; ttRender(); }; }
-  if ($("ttVDay")) { $("ttVDay").onclick = function(){ TT_F.view = "day"; ttRender(); }; }
+  if ($("ttVWeek")) { $("ttVWeek").onclick = function(){ TT_F.view = "week"; ttRender(); ttRefreshControls(); }; }
+  if ($("ttVTeach")) { $("ttVTeach").onclick = function(){ TT_F.view = "teach"; ttRender(); ttRefreshControls(); }; }
+  if ($("ttVDay")) { $("ttVDay").onclick = function(){ TT_F.view = "day"; ttRender(); ttRefreshControls(); }; }
+  if ($("ttVSchool")) { $("ttVSchool").onclick = function(){ TT_F.view = "school"; TT_SECTION = ""; ttRender(); ttRefreshControls(); }; }
+  if ($("ttVWeekly")) {
+    $("ttVWeekly").onclick = function(){
+      // Weekly view of whatever is currently chosen: the whole school unless a
+      // class was picked.
+      TT_F.view = (TT_SECTION === "") ? "school" : "week";
+      ttRender();
+      ttRefreshControls();
+    };
+  }
+  if ($("ttPrint")) { $("ttPrint").onclick = function(){ go("print"); }; }
+  if ($("ttPdf")) { $("ttPdf").onclick = function(){ ttExportPdf(); }; }
   if ($("ttClearF")) {
     $("ttClearF").onclick = function(){
       TT_F = {teacher: "", day: "", subject: "", q: "", view: TT_F.view, daySel: 0};
@@ -3755,6 +3898,231 @@ function ttBindFilters(){
     };
   }
   if ($("ttGoGen")) { $("ttGoGen").onclick = function(){ go("generate"); }; }
+}
+// ---- whole school grid: rows = days and periods, columns = every class ----
+var SCH_PAL = ["f6c9c4", "c9dcf6", "cdeacf", "f8dcb2", "e0d2f2", "c8e6e4",
+               "f5e8ab", "e6d3c4", "d5e8c8", "f2cfe2", "d3d3ee", "e8e0b8"];
+function subjColor(sid){
+  // The same subject keeps the same colour everywhere, taken from the school's
+  // own colour when it has one.
+  var idx = 0;
+  for (var i = 0; i < (S.subjects || []).length; i++) {
+    if (String(S.subjects[i].id) === String(sid)) {
+      var own = String(S.subjects[i].color || "").replace("#", "").trim();
+      if (own.length === 6) { return own; }
+      idx = i;
+    }
+  }
+  return SCH_PAL[idx % SCH_PAL.length];
+}
+function subjCode(sid){
+  var s = tById(S.subjects || [], sid);
+  if (!s) { return ""; }
+  var c = String(s.code || "").trim();
+  if (c !== "") { return c; }
+  return String(s.name || "");
+}
+function tInitials(tid){
+  var t = tById(S.teachers || [], tid);
+  if (!t) { return ""; }
+  var words = String(t.name || "").split(" ");
+  var out = "";
+  var n = 0;
+  for (var i = 0; i < words.length; i++) {
+    var w = words[i].trim();
+    if (w === "") { continue; }
+    if (n >= 2) { break; }
+    out = out + w.charAt(0);
+    n = n + 1;
+  }
+  return out.toUpperCase();
+}
+function schColumns(){
+  // One column per class, in stored order. Every class is shown: nothing is
+  // hidden by a filter.
+  var out = [];
+  for (var i = 0; i < (S.classes || []).length; i++) {
+    var c = S.classes[i];
+    var secs = [];
+    for (var j = 0; j < (S.sections || []).length; j++) {
+      if (String(S.sections[j].class_id) === String(c.id)) { secs.push(S.sections[j].id); }
+    }
+    if (secs.length === 0) { continue; }
+    out.push({id: c.id, name: String(c.name || c.code || "Class"), secs: secs});
+  }
+  return out;
+}
+function schMatch(l){
+  // Filters only mark cells; they never remove a class column.
+  if (TT_F.teacher !== "" && String(l.teacher_id || "") !== TT_F.teacher) { return false; }
+  if (TT_F.subject !== "" && String(l.subject_id || "") !== TT_F.subject) { return false; }
+  if (String(TT_F.q || "") !== "") {
+    var hay = (nameOf(S.subjects, l.subject_id) + " " + nameOf(S.teachers, l.teacher_id) +
+               " " + nameOf(S.rooms, l.room_id)).toLowerCase();
+    if (hay.indexOf(String(TT_F.q).toLowerCase()) < 0) { return false; }
+  }
+  return true;
+}
+function schFiltered(){
+  return (TT_F.teacher !== "" || TT_F.subject !== "" || String(TT_F.q || "") !== "");
+}
+function ttSchoolHtml(){
+  var days = (S.school || {}).days || [];
+  var periods = (S.school || {}).periods || [];
+  var hol = (S.school || {}).holidays || [];
+  var blocked = (S.school || {}).unavailable || [];
+  var cols = schColumns();
+  var tables = S.timetables || {};
+  var h = "<div class='card'><h2>Whole School Weekly Timetable<span>" +
+          esc((S.school || {}).name || "School") +
+          ((S.school || {}).academic_year ? " - " + esc(S.school.academic_year) : "") + "</span></h2>";
+  if (days.length === 0 || periods.length === 0) {
+    return h + "<div class='empty'>The school week is not configured yet. Set the days and periods in School schedule.</div></div>";
+  }
+  if (cols.length === 0) {
+    return h + "<div class='empty'>No class has a section yet. Add a class first.</div></div>";
+  }
+  var lessonCount = 0;
+  for (var sid in tables) {
+    for (var kk in (tables[sid] || {})) {
+      if (((tables[sid] || {})[kk] || {}).subject_id) { lessonCount = lessonCount + 1; }
+    }
+  }
+  if (lessonCount === 0) {
+    return h + "<div class='empty'>No lessons are saved yet. Generate a timetable and approve it, then it appears here." +
+           "<div class='muted' style='font-size:12.5px;margin-top:6px'>Nothing is invented on this page.</div></div></div>";
+  }
+  var dim = schFiltered();
+  h = h + "<div class='schwrap'><table class='sch'><thead><tr>";
+  h = h + "<th class='cday'>Guyyaa</th><th class='cper'>Yeroo</th>";
+  for (var ci = 0; ci < cols.length; ci++) {
+    h = h + "<th>" + esc(cols[ci].name) + "</th>";
+  }
+  h = h + "</tr></thead><tbody>";
+  for (var d = 0; d < days.length; d++) {
+    var isHol = hol.indexOf(String(days[d])) >= 0;
+    var alt = (d % 2) === 1 ? " class='altday'" : "";
+    for (var p = 0; p < periods.length; p++) {
+      var t = ttTime(p);
+      var key = d + "-" + p;
+      h = h + "<tr" + alt + ">";
+      if (p === 0) {
+        h = h + "<td class='cday' rowspan='" + periods.length + "'>" + esc(days[d]) + "</td>";
+      }
+      h = h + "<td class='cper'>" + esc(t.n);
+      if (t.k === "lesson" && t.s !== "") { h = h + "<small>" + esc(t.s) + "</small>"; }
+      h = h + "</td>";
+      for (var c2 = 0; c2 < cols.length; c2++) {
+        h = h + "<td class='cellb'>";
+        if (isHol || t.k !== "lesson" || blocked.indexOf(key) >= 0) {
+          var why = isHol ? "holiday" : (t.k !== "lesson" ? (t.k === "lunch" ? "lunch" : "break") : "unavailable");
+          h = h + "<div class='slbrk'>" + esc(why) + "</div></td>";
+          continue;
+        }
+        var found = null;
+        var foundSec = "";
+        for (var s2 = 0; s2 < cols[c2].secs.length; s2++) {
+          var tab = tables[cols[c2].secs[s2]] || {};
+          var sl = tab[key] || {};
+          if (sl.subject_id) { found = sl; foundSec = cols[c2].secs[s2]; break; }
+        }
+        if (!found) {
+          h = h + "<div class='slfree'>-</div></td>";
+          continue;
+        }
+        var col = subjColor(found.subject_id);
+        var op = (dim && !schMatch({subject_id: found.subject_id, teacher_id: found.teacher_id,
+                                    room_id: found.room_id})) ? " opacity:.28" : "";
+        h = h + "<div class='slcard' style='background:#" + esc(col) + ";" + op + "' data-schlesson='" +
+            esc(foundSec) + "|" + d + "|" + p + "'>";
+        h = h + "<b>" + esc(subjCode(found.subject_id)) + "</b>";
+        h = h + "<small>" + esc(tInitials(found.teacher_id) || "-") + "</small>";
+        if (found.room_id) { h = h + "<span class='sroom'>" + esc(nameOf(S.rooms, found.room_id)) + "</span>"; }
+        h = h + "</div></td>";
+      }
+      h = h + "</tr>";
+    }
+  }
+  h = h + "</tbody></table></div>";
+  h = h + "<div class='schoolsummary'>" + cols.length + " class(es), " + days.length + " day(s), " +
+       periods.length + " period(s), " + lessonCount + " saved lesson(s)." +
+       (dim ? " Matching lessons are highlighted; the rest are faded, not hidden." : "") + "</div>";
+  h = h + "<div class='legend'><span>Tap any lesson to open its details.</span><span>Scroll sideways for the other classes.</span></div>";
+  return h + "</div>";
+}
+function ttTeacherHtml(lessons){
+  // One teacher's week: periods down the side, days across the top.
+  var days = (S.school || {}).days || [];
+  var periods = (S.school || {}).periods || [];
+  var tid = TT_F.teacher;
+  var h = "<div class='card'><h2>Teacher week<span>" +
+          esc(tid === "" ? "choose a teacher" : nameOf(S.teachers, tid)) + "</span></h2>";
+  if (tid === "") {
+    return h + "<div class='empty'>Choose a teacher in the Teacher filter above to see their week.</div></div>";
+  }
+  var map = {};
+  var n = 0;
+  for (var i = 0; i < lessons.length; i++) {
+    var l = lessons[i];
+    map[l.d + "-" + l.p] = l;
+    n = n + 1;
+  }
+  h = h + "<div class='tblwrap'><table class='tt'><thead><tr><th class='dh'>Period</th>";
+  for (var d = 0; d < days.length; d++) { h = h + "<th>" + esc(days[d]) + "</th>"; }
+  h = h + "</tr></thead><tbody>";
+  for (var p = 0; p < periods.length; p++) {
+    var t = ttTime(p);
+    h = h + "<tr><th class='dh'>" + esc(t.n) + "<div class='muted' style='font-size:10px;font-weight:400'>" +
+        esc(t.s + "-" + t.e) + "</div></th>";
+    for (var d2 = 0; d2 < days.length; d2++) {
+      var cell = map[d2 + "-" + p];
+      if (t.k !== "lesson") {
+        h = h + "<td><div class='slot off'><small>" + esc(t.k) + "</small></div></td>";
+      } else if (!cell) {
+        h = h + "<td><div class='slot emptycell'><small>free</small></div></td>";
+      } else {
+        h = h + "<td>" + ttCard(cell) + "</td>";
+      }
+    }
+    h = h + "</tr>";
+  }
+  h = h + "</tbody></table></div>";
+  return h + "<div class='legend'><span>" + n + " lesson(s) this week.</span></div></div>";
+}
+function ttExportPdf(){
+  // The PDF is delivered by the bot to this user's own Telegram chat, not
+  // downloaded to the phone.
+  if (typeof PDF_SENDING !== "undefined" && PDF_SENDING) { return; }
+  PDF_SENDING = true;
+  toast("Sending PDF to Telegram...", "ok");
+  api("print.send", {print_opts: {lang: "om", show_times: true, show_room: true}}).then(function(d){
+    PDF_SENDING = false;
+    if (d && d.sent) {
+      var msg = "PDF sent successfully! Open your Telegram bot chat to download it.";
+      if (d.duplicate) { msg = "This PDF was just sent. Open your Telegram bot chat to download it."; }
+      modal("Sent to Telegram",
+        "<div class='note'>" + esc(msg) + "</div>"
+        + "<div class='muted' style='font-size:12.5px;margin-top:6px'>" + esc(d.filename || "") + "</div>",
+        function(){ closeModal(); }, "Close");
+    } else {
+      ttPdfFailed((d && d.error) ? String(d.error) : "Unable to send PDF. Please try again.");
+    }
+  }).catch(function(e){
+    PDF_SENDING = false;
+    ttPdfFailed((e && e.message) ? String(e.message) : "Unable to send PDF. Please try again.");
+  });
+}
+function ttPdfFailed(msg){
+  modal("PDF not sent",
+    "<div class='errbox'>" + esc(msg) + "</div>"
+    + "<div class='note'>If you have never opened this bot in a private chat, press Start there once, then retry.</div>",
+    function(done){
+      api("print.send", {print_opts: {lang: "om", show_times: true, show_room: true}}).then(function(d){
+        closeModal();
+        if (d && d.sent) { toast("PDF sent to your Telegram chat", "ok"); }
+        else { done(); toast((d && d.error) ? String(d.error) : "Unable to send PDF.", "err"); }
+      }).catch(function(e){ done(); fail(e); });
+    }, "Retry");
 }
 function ttWeekHtml(lessons){
   var days = (S.school || {}).days || [];
@@ -3867,8 +4235,21 @@ function ttRender(){
   if (!$("ttBody")) { return; }
   var lessons = ttVisible();
   var h = "";
-  if (TT_F.view === "day") { h = ttDayHtml(lessons); } else { h = ttWeekHtml(lessons); }
+  if (TT_F.view === "school") {
+    h = ttSchoolHtml();
+  } else if (TT_F.view === "teach") {
+    // Teacher view: the chosen teacher's own week, day across and period down.
+    h = ttTeacherHtml(lessons);
+  } else if (TT_F.view === "day") {
+    h = ttDayHtml(lessons);
+  } else {
+    h = ttWeekHtml(lessons);
+  }
   $("ttBody").innerHTML = h;
+  var sc = $("ttBody").querySelectorAll("[data-schlesson]");
+  for (var s = 0; s < sc.length; s++) {
+    sc[s].onclick = function(){ ttOpenLesson(this.getAttribute("data-schlesson")); };
+  }
   var cards = $("ttBody").querySelectorAll("[data-lesson]");
   for (var i = 0; i < cards.length; i++) {
     cards[i].onclick = function(){ ttOpenLesson(this.getAttribute("data-lesson")); };
@@ -3899,16 +4280,31 @@ function ttPage(){
     return;
   }
   var ro = ttReadOnly();
+  // A student sees only their own class; that is their whole timetable.
   if (ro && S.me && S.me.role === "student" && S.me.section_id) {
     TT_SECTION = S.me.section_id;
+    TT_F.view = "week";
+  } else if (TT_SECTION !== "") {
+    // A class was chosen on purpose (for example from the Classes page), so show
+    // that class. This keeps the individual class view working.
+    TT_F.view = "week";
+  } else {
+    // Otherwise the page opens on the WHOLE SCHOOL: every class together, with
+    // no class, teacher or subject to choose first.
+    if (TT_F.view !== "day" && TT_F.view !== "teach" && TT_F.view !== "week") {
+      TT_F.view = "school";
+    }
   }
-  if (!ro && TT_SECTION === "" && (S.sections || []).length > 0 && !TT_F.q && TT_F.teacher === "" && TT_F.subject === "" && TT_F.day === "") {
-    // First visit as an administrator: start on the first class, which is the
-    // common case. Whole school stays one tap away in the class filter.
-    TT_SECTION = S.sections[0].id;
+  var headTitle = "Whole School Weekly Timetable";
+  var headSub = "Every class together - tap any lesson to open it";
+  if (ro && S.me && S.me.role === "student") {
+    headTitle = "My timetable";
+    headSub = "Your own lessons";
+  } else if (TT_F.view !== "school") {
+    headTitle = "Timetable";
+    headSub = "Tap a lesson to open it";
   }
-  var h = head(ro ? "My timetable" : "Timetable",
-               ro ? "Your own lessons" : "Tap a lesson to open it",
+  var h = head(headTitle, headSub,
                "<span class='pill' id='ttCount'>" + ttVisible().length + " lesson(s)</span>");
   if ((S.sections || []).length === 0) {
     $("main").innerHTML = h + "<div class='card'><div class='empty'>No class sections exist yet. Add a class first, then generate a timetable.</div></div>";
