@@ -83,6 +83,9 @@ tbody tr:hover{background: #1f2839;}
 .slot{min-height: 56px; border-radius: 9px; background: #141c2b; border: 1px dashed #2a3548; display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 5px 7px; cursor: pointer;}
 .slot:hover{border-color: var(--acc); background: #182233;}
 .slot.full{background: #1d2c47; border: 1px solid #2f5590;}
+.slot.off{background: #10161f; border: 1px solid #1c2532; cursor: default; opacity: 0.75;}
+.slot.off:hover{background: #10161f; border-color: #1c2532;}
+.slot.off small{color: #5a6b85; font-style: italic;}
 .slot b{font-size: 12px; font-weight: 650; line-height: 1.25;}
 .slot small{font-size: 10.5px; color: var(--mut); line-height: 1.3;}
 .slot .plus{color: #3f4f68; font-size: 16px; text-align: center;}
@@ -172,7 +175,7 @@ tbody tr:hover{background: #1f2839;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq55aaWkppIq_n8zeXmiw7BiYF0TJQrqFBjr_eBH-eLs4VvBt3Kz3-yDyFNzCDddhRi6senACDb_qh6IoxmRrVhjLOco3Rhhcn70_UhtrTd8S26t-4YgJC7uz5HOgjHx1ibO_H58pYqur2anu5zH_xT5GgLfHg3q-y3be4VFGjZbY8F8qFa_LQ-Y4dhwxPHDVKPRjb";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq58UZXHHTVSnblWJsnma9OPMEHxYaPs1QKkci9xjjyOZ5ZBoYqs0yN1llKePaWhVAQYL2zJwzwwLFgErBmxYGBi4s1pTOb2D1tsdOriTaJLXMHdPvdPFO6zS3U5ISnz-5IKQ3SxpF4q5modvbw6VtwapjtgoLUHrdJmbXE0t1w9AonNgLCyQV5gsQCOu1VYLILI-s";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -467,7 +470,7 @@ function go(v){
   else if (v === "classes") { classesPage(); }
   else if (v === "subjects") { subjectsPage(); }
   else if (v === "rooms") { roomsPage(); }
-  else if (v === "periods") { periodsView(); }
+  else if (v === "periods") { schedView(); }
   else if (v === "settings" || v === "school") { settingsView(); }
   else if (v === "curriculum") { currView(); }
   else if (v === "generate") { genView(); }
@@ -1211,52 +1214,16 @@ function genView(){
     h = h + "<label class='chk'><input type='checkbox' data-gen-class='" + esc(c.id) + "' checked><span><b>" + esc(c.name) + "</b> <span class='muted'>" + secs.length + " section(s)</span></span></label>";
   }
   h = h + "<label class='chk' style='margin-top:10px'><input type='checkbox' id='optRooms' checked><span>Assign a free classroom when the curriculum names none</span></label>";
-  h = h + "<label class='chk'><input type='checkbox' id='optKeep'><span>Keep the entries I already placed by hand</span></label>";
+  h = h + "<div class='note'>Generating builds a preview only. Nothing is stored until you approve it.</div>";
   h = h + "<div style='margin-top:12px;display:flex;gap:8px;flex-wrap:wrap'>";
-  h = h + "<button class='primary' id='btnGen'>Generate now</button>";
+  h = h + "<button class='primary' id='btnGen'>Generate timetable</button>";
+  h = h + "<button class='ghost' id='btnValidate'>Validate timetable</button>";
   h = h + "<button class='ghost' id='btnClear'>Clear chosen timetables</button>";
   h = h + "</div></div>";
   h = h + "<div id='genOut'></div>";
   $("main").innerHTML = h;
-  $("btnGen").onclick = function(){
-    var ids = chosenSections();
-    if (ids.length === 0) { toast("Choose at least one class.", "err"); return; }
-    $("btnGen").disabled = true;
-    $("genOut").innerHTML = "<div class='card'><div class='empty'>Generating...</div></div>";
-    api("timetable.generate", {section_ids: ids, gen_opts: {assign_rooms: $("optRooms").checked, keep_existing: $("optKeep").checked}})
-      .then(function(d){
-        $("btnGen").disabled = false;
-        var rep = d.report || [];
-        var placed = 0;
-        var total = 0;
-        var unplaced = 0;
-        for (var i = 0; i < rep.length; i++) {
-          placed = placed + rep[i].placed;
-          total = total + rep[i].total;
-          unplaced = unplaced + (rep[i].unplaced || []).length;
-        }
-        var out = "<div class='card'><h2>Result</h2><div class='kpis'>";
-        out = out + "<div class='kpi ok'><div class='v'>" + placed + "</div><div class='l'>periods placed</div></div>";
-        out = out + "<div class='kpi'><div class='v'>" + total + "</div><div class='l'>periods needed</div></div>";
-        out = out + "<div class='kpi " + (unplaced > 0 ? "bad" : "ok") + "'><div class='v'>" + unplaced + "</div><div class='l'>could not be placed</div></div>";
-        out = out + "</div>";
-        for (var j = 0; j < rep.length; j++) {
-          var r = rep[j];
-          var nm = sectionName(r.section_id);
-          if (r.note) { out = out + "<div class='warnbox'>" + esc(nm) + ": " + esc(r.note) + "</div>"; }
-          if ((r.unplaced || []).length > 0) {
-            var subs = [];
-            for (var k = 0; k < r.unplaced.length; k++) { subs.push(nameOf(S.subjects, r.unplaced[k].subject_id)); }
-            out = out + "<div class='warnbox'>" + esc(nm) + ": " + esc(subs.join(", ")) + " could not be placed (no free slot with the teacher and room free).</div>";
-          }
-        }
-        if (unplaced === 0 && total > 0) { out = out + "<div class='note'>Every requested period was placed without breaking a rule.</div>"; }
-        out = out + "<div style='margin-top:10px'><button class='primary' id='btnGenGo'>Open the timetable</button></div></div>";
-        $("genOut").innerHTML = out;
-        $("btnGenGo").onclick = function(){ go("timetable"); };
-        refresh().then(function(){});
-      }).catch(function(e){ $("btnGen").disabled = false; $("genOut").innerHTML = ""; fail(e); });
-  };
+  $("btnGen").onclick = function(){ runGenerate(false); };
+  if ($("btnValidate")) { $("btnValidate").onclick = validateStored; }
   $("btnClear").onclick = function(){
     var ids = chosenSections();
     if (ids.length === 0) { toast("Choose at least one class.", "err"); return; }
@@ -1355,11 +1322,29 @@ function drawGrid(){
     h = h + "</select></label>";
   }
   h = h + "<div class='tblwrap'><table class='tt'><thead><tr><th class='dh'>Day</th>";
-  for (var p = 0; p < periods.length; p++) { h = h + "<th>" + esc(periods[p].name) + "</th>"; }
+  for (var p = 0; p < periods.length; p++) {
+    var pp = periods[p] || {};
+    var isLes = String(pp.kind || "lesson") === "lesson";
+    h = h + "<th>" + esc(pp.name) + (isLes ? "" : "<div class='muted' style='font-size:10px;font-weight:400'>" + esc(pp.kind || "") + "</div>") + "</th>";
+  }
   h = h + "</tr></thead><tbody>";
+  var holList = (S.school || {}).holidays || [];
+  var blocked = (S.school || {}).unavailable || [];
   for (var d = 0; d < days.length; d++) {
-    h = h + "<tr><th class='dh'>" + esc(days[d]) + "</th>";
+    var isHol = holList.indexOf(String(days[d])) >= 0;
+    h = h + "<tr><th class='dh'>" + esc(days[d]) + (isHol ? "<div class='muted' style='font-size:10px'>holiday</div>" : "") + "</th>";
     for (var q = 0; q < periods.length; q++) {
+      var pb = periods[q] || {};
+      var lessonPeriod = String(pb.kind || "lesson") === "lesson";
+      // A break, lunch, holiday or blocked slot is not teaching time, so it is
+      // shown but cannot be tapped to hold a lesson.
+      if (!lessonPeriod || isHol || blocked.indexOf(String(d) + "-" + String(q)) >= 0) {
+        var why = pb.kind || "lesson";
+        if (isHol) { why = "holiday"; }
+        if (lessonPeriod && !isHol && blocked.indexOf(String(d) + "-" + String(q)) >= 0) { why = "unavailable"; }
+        h = h + "<td><div class='slot off'><small>" + esc(why) + "</small></div></td>";
+        continue;
+      }
       var key = cellKey(d, q);
       var cell = table[key] || {};
       var cls = cell.subject_id ? "slot full" : "slot";
@@ -2679,6 +2664,583 @@ function roomsPage(){
   for (var d = 0; d < ds.length; d++) {
     ds[d].onclick = function(){ delRoom(this.getAttribute("data-rdel")); };
   }
+}
+// ---------------- School schedule configuration ----------------
+var DAYNAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+var SCHED = [];
+var SCHED_DAYS = [];
+var SCHED_HOL = [];
+var SCHED_UN = [];
+var SCHED_INIT = false;
+var SCHED_MSG = "";
+
+function schedLoad(){
+  var sc = S.school || {};
+  var ps = sc.periods || [];
+  SCHED = [];
+  for (var i = 0; i < ps.length; i++) {
+    var k = String(ps[i].kind || "lesson");
+    SCHED.push({name: ps[i].name || ("P" + (i + 1)), kind: k,
+                start: ps[i].start || "", end: ps[i].end || ""});
+  }
+  if (SCHED.length === 0) {
+    SCHED.push({name: "P1", kind: "lesson", start: "08:00", end: "08:45"});
+  }
+  SCHED_DAYS = [];
+  var have = sc.days || [];
+  for (var j = 0; j < have.length; j++) {
+    var d = String(have[j]).trim();
+    if (d !== "" && SCHED_DAYS.indexOf(d) < 0) { SCHED_DAYS.push(d); }
+  }
+  SCHED_HOL = [];
+  var hol = sc.holidays || [];
+  for (var k2 = 0; k2 < hol.length; k2++) { SCHED_HOL.push(String(hol[k2])); }
+  SCHED_UN = [];
+  var un = sc.unavailable || [];
+  for (var m = 0; m < un.length; m++) { SCHED_UN.push(String(un[m])); }
+}
+function schedInit(){
+  if (SCHED_INIT) { return; }
+  schedLoad();
+  SCHED_INIT = true;
+}
+function dayChoices(){
+  var out = [];
+  for (var i = 0; i < DAYNAMES.length; i++) { out.push(DAYNAMES[i]); }
+  for (var j = 0; j < SCHED_DAYS.length; j++) {
+    if (out.indexOf(SCHED_DAYS[j]) < 0) { out.push(SCHED_DAYS[j]); }
+  }
+  return out;
+}
+function schedMin(v){
+  var t = String(v || "");
+  if (!/^[0-9]{1,2}:[0-9]{2}$/.test(t)) { return -1; }
+  var p = t.split(":");
+  var hh = parseInt(p[0], 10);
+  var mm2 = parseInt(p[1], 10);
+  if (hh < 0 || hh > 23 || mm2 < 0 || mm2 > 59) { return -1; }
+  return hh * 60 + mm2;
+}
+function schedPad(n){ return (n < 10 ? "0" : "") + n; }
+function schedHHMM(mins){
+  if (mins < 0) { return ""; }
+  return schedPad(Math.floor(mins / 60)) + ":" + schedPad(mins % 60);
+}
+function lessonIndexes(){
+  var out = [];
+  for (var i = 0; i < SCHED.length; i++) { if (SCHED[i].kind === "lesson") { out.push(i); } }
+  return out;
+}
+function collectSched(){
+  var box = $("schBox");
+  if (!box) { return; }
+  for (var i = 0; i < SCHED.length; i++) {
+    var n = box.querySelector("[data-sn='" + i + "']");
+    var k = box.querySelector("[data-sk='" + i + "']");
+    var s = box.querySelector("[data-ss='" + i + "']");
+    var e = box.querySelector("[data-se='" + i + "']");
+    if (n) { SCHED[i].name = n.value.trim(); }
+    if (k) { SCHED[i].kind = k.value; }
+    if (s) { SCHED[i].start = s.value; }
+    if (e) { SCHED[i].end = e.value; }
+  }
+  var us = $("main").querySelectorAll(".u-on");
+  var keep = [];
+  for (var j = 0; j < us.length; j++) { if (us[j].checked) { keep.push(us[j].getAttribute("data-key")); } }
+  SCHED_UN = keep;
+}
+function scheddraw(){
+  var rd = isWrite() ? "" : " disabled";
+  var h = "";
+  for (var i = 0; i < SCHED.length; i++) {
+    var b = SCHED[i];
+    var isLes = b.kind === "lesson";
+    h = h + "<div style='display:grid;grid-template-columns:1.2fr 1fr 0.9fr 0.9fr 38px;gap:6px;margin-top:7px;align-items:center'>";
+    h = h + "<input data-sn='" + i + "' value='" + esc(b.name) + "' maxlength='12' placeholder='P1'" + rd + ">";
+    h = h + "<select data-sk='" + i + "'" + rd + ">";
+    h = h + "<option value='lesson'" + (isLes ? " selected" : "") + ">lesson</option>";
+    h = h + "<option value='break'" + (b.kind === "break" ? " selected" : "") + ">break</option>";
+    h = h + "<option value='lunch'" + (b.kind === "lunch" ? " selected" : "") + ">lunch</option>";
+    h = h + "</select>";
+    h = h + "<input type='time' data-ss='" + i + "' value='" + esc(b.start) + "'" + rd + ">";
+    h = h + "<input type='time' data-se='" + i + "' value='" + esc(b.end) + "'" + rd + ">";
+    h = h + "<button class='sm bad' data-sx='" + i + "'" + rd + " title='Remove this block'>&times;</button>";
+    h = h + "</div>";
+  }
+  $("schBox").innerHTML = h;
+  var xs = $("schBox").querySelectorAll("[data-sx]");
+  for (var k = 0; k < xs.length; k++) {
+    xs[k].onclick = function(){
+      collectSched();
+      var idx = parseInt(this.getAttribute("data-sx"), 10);
+      var keep = [];
+      for (var m = 0; m < SCHED.length; m++) { if (m !== idx) { keep.push(SCHED[m]); } }
+      SCHED = keep;
+      schedView();
+    };
+  }
+  var sels = $("schBox").querySelectorAll("[data-sk]");
+  for (var s2 = 0; s2 < sels.length; s2++) {
+    sels[s2].onchange = function(){ collectSched(); schedView(); };
+  }
+}
+function schedUnHtml(){
+  var cols = lessonIndexes();
+  if (SCHED_DAYS.length === 0 || cols.length === 0) {
+    return "<div class='muted' style='font-size:12.5px'>Choose working days and at least one lesson period first.</div>";
+  }
+  var h = "<div class='tblwrap'><table class='av'><thead><tr><th>Day</th>";
+  for (var c = 0; c < cols.length; c++) {
+    h = h + "<th style='text-align:center'>" + esc(SCHED[cols[c]].name) + "</th>";
+  }
+  h = h + "</tr></thead><tbody>";
+  for (var d = 0; d < SCHED_DAYS.length; d++) {
+    var dname = SCHED_DAYS[d];
+    var hol = SCHED_HOL.indexOf(dname) >= 0;
+    h = h + "<tr><th style='text-align:left'>" + esc(dname) + (hol ? " <span class='muted'>(holiday)</span>" : "") + "</th>";
+    for (var q = 0; q < cols.length; q++) {
+      var key = d + "-" + cols[q];
+      var on = SCHED_UN.indexOf(key) >= 0 ? " checked" : "";
+      h = h + "<td style='text-align:center'><input type='checkbox' class='u-on' data-key='" + key + "'" + on + (hol ? " disabled" : "") + " style='width:auto'></td>";
+    }
+    h = h + "</tr>";
+  }
+  return h + "</tbody></table></div>";
+}
+function schedTimeline(){
+  var rows = [];
+  for (var i = 0; i < SCHED.length; i++) { rows.push({i: i, s: schedMin(SCHED[i].start), b: SCHED[i]}); }
+  rows.sort(function(a, b){ return a.s - b.s; });
+  var h = "<div class='tblwrap'><table><thead><tr><th>Block</th><th>Type</th><th>Time</th></tr></thead><tbody>";
+  for (var j = 0; j < rows.length; j++) {
+    var b = rows[j].b;
+    if (b.kind !== "lesson") { continue; }
+    h = h + "<tr><td><b>" + esc(b.name) + "</b></td><td class='muted'>lesson</td><td class='muted'>" + esc(b.start + "-" + b.end) + "</td></tr>";
+  }
+  for (var k = 0; k < rows.length; k++) {
+    var b2 = rows[k].b;
+    if (b2.kind === "lesson") { continue; }
+    h = h + "<tr><td><b>" + esc(b2.name) + "</b></td><td class='muted'>" + esc(b2.kind) + "</td><td class='muted'>" + esc(b2.start + "-" + b2.end) + "</td></tr>";
+  }
+  return h + "</tbody></table></div>";
+}
+function schedView(){
+  schedInit();
+  var rd = isWrite() ? "" : " disabled";
+  var sc = S.school || {};
+  var lesInd = lessonIndexes();
+  var h = head("School schedule", "The school day that every timetable is built from");
+  if (SCHED_MSG !== "") {
+    h = h + "<div class='warnbox'>" + esc(SCHED_MSG) + "</div>";
+    SCHED_MSG = "";
+  }
+  h = h + "<div class='card'><h2>School</h2>";
+  h = h + "<div class='row'><label class='f'><span>School name</span><input id='schName' value='" + esc(sc.name || "") + "' maxlength='80'" + rd + "></label>";
+  h = h + "<label class='f'><span>Academic year</span><input id='schYear' value='" + esc(sc.academic_year || "") + "' maxlength='40' placeholder='e.g. 2025/2026'" + rd + "></label></div>";
+  h = h + "</div>";
+  h = h + "<div class='card'><h2>Working days<span>" + SCHED_DAYS.length + " day(s)</span></h2>";
+  var all = dayChoices();
+  for (var i = 0; i < all.length; i++) {
+    var on = SCHED_DAYS.indexOf(all[i]) >= 0;
+    var isHol = SCHED_HOL.indexOf(all[i]) >= 0;
+    h = h + "<label class='chk'><input type='checkbox' class='d-on' data-day='" + esc(all[i]) + "'" + (on ? " checked" : "") + (isHol ? " disabled" : "") + "><span>" + esc(all[i]) + (isHol ? " <span class='muted'>(holiday)</span>" : "") + "</span></label>";
+  }
+  h = h + "<div class='muted' style='font-size:12px;margin-top:8px'>A day that is not ticked is not part of the school week.</div></div>";
+  h = h + "<div class='card'><h2>School day<span>" + lesInd.length + " teaching period(s) a day</span></h2>";
+  h = h + "<div class='row'><label class='f'><span>School starts</span><input type='time' id='schStart' value='" + esc(sc.start_time || "08:00") + "'" + rd + "></label>";
+  h = h + "<label class='f'><span>School ends</span><input type='time' id='schEnd' value='" + esc(sc.end_time || "13:00") + "'" + rd + "></label></div>";
+  var sess = sc.sessions || {};
+  h = h + "<label class='chk'><input type='checkbox' id='schAM'" + (sess.morning ? " checked" : "") + (rd ? " disabled" : "") + "><span>Morning session</span></label>";
+  h = h + "<label class='chk'><input type='checkbox' id='schPM'" + (sess.afternoon ? " checked" : "") + (rd ? " disabled" : "") + "><span>Afternoon session</span></label>";
+  h = h + "</div>";
+  h = h + "<div class='card'><h2>Blocks of the day<span>lessons, breaks and lunch in order</span></h2>";
+  h = h + "<div style='display:grid;grid-template-columns:1.2fr 1fr 0.9fr 0.9fr 38px;gap:6px'><span class='muted' style='font-size:11px'>NAME</span><span class='muted' style='font-size:11px'>TYPE</span><span class='muted' style='font-size:11px'>START</span><span class='muted' style='font-size:11px'>END</span><span></span></div>";
+  h = h + "<div id='schBox'></div>";
+  if (isWrite()) {
+    h = h + "<div style='margin-top:12px;display:flex;gap:8px;flex-wrap:wrap'>";
+    h = h + "<button class='sm' id='schAddLes'>+ Lesson</button>";
+    h = h + "<button class='sm ghost' id='schAddBrk'>+ Break</button>";
+    h = h + "<button class='sm ghost' id='schAddLun'>+ Lunch</button>";
+    h = h + "</div>";
+  }
+  h = h + "<div class='note'>Breaks and lunch are real blocks of the day. No lesson can ever be placed in them, and lesson periods are the only slots a timetable uses.</div></div>";
+  h = h + "<div class='card'><h2>Holidays<span>days that never hold a lesson</span></h2>";
+  if (SCHED_DAYS.length === 0) {
+    h = h + "<div class='muted'>Choose working days first.</div>";
+  }
+  for (var d2 = 0; d2 < SCHED_DAYS.length; d2++) {
+    var hol2 = SCHED_HOL.indexOf(SCHED_DAYS[d2]) >= 0;
+    h = h + "<label class='chk'><input type='checkbox' class='h-on' data-day='" + esc(SCHED_DAYS[d2]) + "'" + (hol2 ? " checked" : "") + (rd ? " disabled" : "") + "><span>" + esc(SCHED_DAYS[d2]) + " is a holiday</span></label>";
+  }
+  h = h + "</div>";
+  h = h + "<div class='card'><h2>Unavailable periods<span>tick the lesson periods that cannot be used</span></h2>";
+  h = h + schedUnHtml();
+  h = h + "<div class='note'>A holiday already blocks every period of that day.</div></div>";
+  h = h + "<div class='card'><h2>Preview of the school day</h2>" + schedTimeline() + "</div>";
+  if (isWrite()) { h = h + "<button class='primary' id='schSave'>Save configuration</button>"; }
+  $("main").innerHTML = h;
+  scheddraw();
+  var ds = $("main").querySelectorAll(".d-on");
+  for (var e = 0; e < ds.length; e++) {
+    ds[e].onchange = function(){
+      collectSched();
+      var day = this.getAttribute("data-day");
+      var on = this.checked;
+      var next = [];
+      var choices = dayChoices();
+      for (var f = 0; f < choices.length; f++) {
+        var dd = choices[f];
+        var isOn = SCHED_DAYS.indexOf(dd) >= 0;
+        if (dd === day) { isOn = on; }
+        if (isOn) { next.push(dd); }
+      }
+      SCHED_DAYS = next;
+      schedView();
+    };
+  }
+  var hs = $("main").querySelectorAll(".h-on");
+  for (var g = 0; g < hs.length; g++) {
+    hs[g].onchange = function(){
+      collectSched();
+      var day = this.getAttribute("data-day");
+      var at = SCHED_HOL.indexOf(day);
+      if (this.checked) {
+        if (at < 0) { SCHED_HOL.push(day); }
+      } else {
+        if (at >= 0) { SCHED_HOL.splice(at, 1); }
+      }
+      schedView();
+    };
+  }
+  if ($("schAddLes")) {
+    $("schAddLes").onclick = function(){ schedAdd("lesson"); };
+    $("schAddBrk").onclick = function(){ schedAdd("break"); };
+    $("schAddLun").onclick = function(){ schedAdd("lunch"); };
+  }
+  if ($("schSave")) { $("schSave").onclick = schedSave; }
+}
+function schedAdd(kind){
+  collectSched();
+  if (SCHED.length >= 24) { toast("A day has 24 blocks at most.", "err"); return; }
+  var lastEnd = schedMin(S.school ? (S.school.start_time || "08:00") : "08:00");
+  for (var i = 0; i < SCHED.length; i++) {
+    var e = schedMin(SCHED[i].end);
+    if (e > lastEnd) { lastEnd = e; }
+  }
+  var len = 45;
+  if (kind !== "lesson") { len = 20; }
+  if (kind === "lunch") { len = 60; }
+  var nm = "P" + (lessonIndexes().length + 1);
+  if (kind === "break") { nm = "Break"; }
+  if (kind === "lunch") { nm = "Lunch"; }
+  SCHED.push({name: nm, kind: kind, start: schedHHMM(lastEnd), end: schedHHMM(lastEnd + len)});
+  schedView();
+}
+function schedSave(){
+  if (!isWrite()) { toast("Only an administrator can change this.", "err"); return; }
+  collectSched();
+  var name = $("schName").value.trim();
+  if (name === "") { toast("Enter the school name.", "err"); return; }
+  if (SCHED_DAYS.length === 0) { toast("Tick at least one working day.", "err"); return; }
+  if (SCHED.length === 0) { toast("Add at least one period.", "err"); return; }
+  var les = lessonIndexes();
+  if (les.length === 0) { toast("A day needs at least one lesson period.", "err"); return; }
+  var st = schedMin($("schStart").value);
+  var en = schedMin($("schEnd").value);
+  if (st < 0 || en < 0) { toast("Enter the school start and end times.", "err"); return; }
+  if (en <= st) { toast("The school must end after it starts.", "err"); return; }
+  var rows = [];
+  for (var i = 0; i < SCHED.length; i++) {
+    var b = SCHED[i];
+    if (b.name === "") { toast("Block " + (i + 1) + " needs a name.", "err"); return; }
+    var s = schedMin(b.start);
+    var e = schedMin(b.end);
+    if (s < 0 || e < 0) { toast(b.name + ": use times like 08:45.", "err"); return; }
+    if (e <= s) { toast(b.name + " ends at or before it starts.", "err"); return; }
+    if (s < st || e > en) { toast(b.name + " is outside the school day.", "err"); return; }
+    rows.push({name: b.name, kind: b.kind, start: b.start, end: b.end, s: s, e: e});
+  }
+  rows.sort(function(a, b2){ return a.s - b2.s; });
+  for (var j = 1; j < rows.length; j++) {
+    if (rows[j].s < rows[j - 1].e) {
+      toast("The times overlap: " + rows[j - 1].name + " and " + rows[j].name + ".", "err");
+      return;
+    }
+  }
+  var hol = [];
+  for (var k = 0; k < SCHED_HOL.length; k++) { hol.push(SCHED_HOL[k]); }
+  var school = {
+    name: name,
+    academic_year: $("schYear").value.trim(),
+    days: SCHED_DAYS,
+    periods: SCHED,
+    start_time: $("schStart").value,
+    end_time: $("schEnd").value,
+    sessions: {morning: $("schAM").checked, afternoon: $("schPM").checked},
+    holidays: hol,
+    unavailable: SCHED_UN,
+    logo_emoji: (S.school || {}).logo_emoji || ""
+  };
+  splash(true);
+  api("settings.save", {school: school}).then(function(d){
+    splash(false);
+    S.school = d.school;
+    SCHED_INIT = false;
+    var cleared = d.cleared || 0;
+    toast(cleared > 0 ? ("Saved. " + cleared + " lesson(s) no longer fit and were cleared.") : "Schedule saved", "ok");
+    refresh().then(function(){ go("periods"); });
+  }).catch(function(e){ splash(false); fail(e); });
+}
+// ---------------- Generation: preview, validate, approve ----------------
+var GEN_PREVIEW = null;
+var GEN_SEC = "";
+
+function genProblemsHtml(d){
+  var h = "<div class='card'><h2>Cannot be generated yet<span>" + ((d.problems || []).length) + " problem(s)</span></h2>";
+  h = h + "<div class='errbox'>No timetable was produced. Nothing has been saved. Fix the items below and generate again.</div>";
+  for (var i = 0; i < (d.problems || []).length; i++) {
+    var p = d.problems[i];
+    h = h + "<div class='warnbox'><b>" + esc(p.text) + "</b><div class='muted' style='font-size:12.5px;margin-top:3px'>How to fix: " + esc(p.fix || "") + "</div></div>";
+  }
+  h = h + "<div style='margin-top:12px'><button class='primary' id='gpAgain'>Try again</button></div></div>";
+  return h;
+}
+function genKpisHtml(d){
+  var placed = d.placed || 0;
+  var total = d.total || 0;
+  var miss = (d.unplaced || []).length;
+  var viol = (d.violations || []).length;
+  var h = "<div class='kpis'>";
+  h = h + "<div class='kpi ok'><div class='v'>" + placed + "</div><div class='l'>lessons placed</div></div>";
+  h = h + "<div class='kpi'><div class='v'>" + total + "</div><div class='l'>lessons needed</div></div>";
+  h = h + "<div class='kpi " + (miss > 0 ? "bad" : "ok") + "'><div class='v'>" + miss + "</div><div class='l'>could not be placed</div></div>";
+  h = h + "<div class='kpi " + (viol > 0 ? "bad" : "ok") + "'><div class='v'>" + viol + "</div><div class='l'>rule problems</div></div>";
+  return h + "</div>";
+}
+function genResultHtml(d){
+  var h = "";
+  if (d.feasible === false) { return genProblemsHtml(d); }
+  var healthy = (d.unplaced || []).length === 0 && (d.violations || []).length === 0 && d.complete;
+  h = h + "<div class='card'><h2>Preview<span>not saved yet</span></h2>";
+  h = h + genKpisHtml(d);
+  if (healthy) {
+    h = h + "<div class='okbox'>Every requested lesson was placed and no rule is broken. Review the preview, then approve it to save.</div>";
+  } else {
+    h = h + "<div class='warnbox'>This timetable is not complete. It is shown so you can see the real conflicts; approve only if you accept it.</div>";
+  }
+  for (var i = 0; i < (d.warnings || []).length; i++) {
+    h = h + "<div class='note'>" + esc(d.warnings[i]) + "</div>";
+  }
+  if ((d.unplaced || []).length > 0) {
+    h = h + "<h2 style='margin-top:14px'>Lessons that could not be placed<span>" + d.unplaced.length + "</span></h2>";
+    var seen = {};
+    for (var j = 0; j < d.unplaced.length; j++) {
+      var u = d.unplaced[j];
+      var key = u.class + "|" + u.subject + "|" + u.reason;
+      if (seen[key]) { continue; }
+      seen[key] = true;
+      h = h + "<div class='warnbox'><b>" + esc(u.class) + ": " + esc(u.subject) + "</b>" +
+              "<div class='muted' style='font-size:12.5px;margin-top:3px'>" + esc(u.reason) + "</div></div>";
+    }
+  }
+  if ((d.violations || []).length > 0) {
+    h = h + "<h2 style='margin-top:14px'>Rule problems found in the result<span>" + d.violations.length + "</span></h2>";
+    for (var k = 0; k < d.violations.length; k++) {
+      h = h + "<div class='warnbox'>" + esc(d.violations[k].text) + "</div>";
+    }
+  }
+  var rep = d.report || [];
+  if (rep.length > 0) {
+    h = h + "<h2 style='margin-top:14px'>Per class</h2><div class='tblwrap'><table><thead><tr><th>Class</th><th>Placed</th><th>Needed</th></tr></thead><tbody>";
+    for (var m = 0; m < rep.length; m++) {
+      h = h + "<tr><td>" + esc(rep[m].class + (rep[m].section ? " - " + rep[m].section : "")) + "</td><td>" + rep[m].placed + "</td><td>" + rep[m].total + "</td></tr>";
+    }
+    h = h + "</tbody></table></div>";
+  }
+  h = h + "<div style='margin-top:14px;display:flex;gap:8px;flex-wrap:wrap'>";
+  h = h + "<button class='primary' id='gpApprove'>Approve and save</button>";
+  h = h + "<button class='sm' id='gpRegen'>Regenerate</button>";
+  h = h + "<button class='sm ghost' id='gpValidate'>Validate</button>";
+  h = h + "<button class='sm ghost' id='gpCancel'>Cancel</button>";
+  h = h + "</div></div>";
+  h = h + "<div id='gpGrid'></div>";
+  h = h + "<div id='gpCheck'></div>";
+  return h;
+}
+function genSectionDropdown(){
+  var ids = [];
+  for (var k in (GEN_PREVIEW.plans || {})) { ids.push(k); }
+  if (ids.length === 0) { return ""; }
+  if (GEN_SEC === "" || ids.indexOf(GEN_SEC) < 0) { GEN_SEC = ids[0]; }
+  var h = "<label class='f'><span>Show class</span><select id='gpPick'>";
+  for (var i = 0; i < ids.length; i++) {
+    h = h + "<option value='" + esc(ids[i]) + "'" + (ids[i] === GEN_SEC ? " selected" : "") + ">" + esc(sectionName(ids[i])) + "</option>";
+  }
+  return h + "</select></label>";
+}
+function genPreviewGrid(){
+  if (!GEN_PREVIEW || !$("gpGrid")) { return; }
+  var days = (S.school || {}).days || [];
+  var periods = (S.school || {}).periods || [];
+  var table = (GEN_PREVIEW.plans || {})[GEN_SEC] || {};
+  var hol = (S.school || {}).holidays || [];
+  var blocked = (S.school || {}).unavailable || [];
+  var h = "<div class='card'><h2>Preview timetable<span>" + esc(sectionName(GEN_SEC)) + "</span></h2>";
+  h = h + genSectionDropdown();
+  h = h + "<div class='tblwrap'><table class='tt'><thead><tr><th class='dh'>Day</th>";
+  for (var p = 0; p < periods.length; p++) {
+    var pp = periods[p] || {};
+    var isLes = String(pp.kind || "lesson") === "lesson";
+    h = h + "<th>" + esc(pp.name) + (isLes ? "" : "<div class='muted' style='font-size:10px;font-weight:400'>" + esc(pp.kind) + "</div>") + "</th>";
+  }
+  h = h + "</tr></thead><tbody>";
+  for (var d = 0; d < days.length; d++) {
+    var isHol = hol.indexOf(String(days[d])) >= 0;
+    h = h + "<tr><th class='dh'>" + esc(days[d]) + "</th>";
+    for (var q = 0; q < periods.length; q++) {
+      var pb = periods[q] || {};
+      var lessonPeriod = String(pb.kind || "lesson") === "lesson";
+      var key = d + "-" + q;
+      if (!lessonPeriod || isHol || blocked.indexOf(key) >= 0) {
+        h = h + "<td><div class='slot off'><small>" + esc(isHol ? "holiday" : (lessonPeriod ? "unavailable" : (pb.kind || ""))) + "</small></div></td>";
+        continue;
+      }
+      var cell = table[key] || {};
+      if (cell.subject_id) {
+        var sub = "";
+        if (cell.teacher_id) { sub = nameOf(S.teachers, cell.teacher_id); }
+        if (cell.room_id) { sub = sub + (sub ? " - " : "") + nameOf(S.rooms, cell.room_id); }
+        h = h + "<td><div class='slot full' data-gpedit='" + key + "'><b>" + esc(nameOf(S.subjects, cell.subject_id)) + "</b><small>" + esc(sub) + "</small></div></td>";
+      } else {
+        h = h + "<td><div class='slot' data-gpedit='" + key + "'><div class='plus'>+</div></div></td>";
+      }
+    }
+    h = h + "</tr>";
+  }
+  h = h + "</tbody></table></div>";
+  h = h + "<div class='legend'><span><span class='pill ok'>filled</span> lesson in the preview</span><span>Tap a cell to change it before saving</span></div></div>";
+  $("gpGrid").innerHTML = h;
+  if ($("gpPick")) {
+    $("gpPick").onchange = function(){ GEN_SEC = this.value; genPreviewGrid(); };
+  }
+  var cells = $("gpGrid").querySelectorAll("[data-gpedit]");
+  for (var c = 0; c < cells.length; c++) {
+    cells[c].onclick = function(){ genEditCell(this.getAttribute("data-gpedit")); };
+  }
+}
+function genEditCell(key){
+  var parts = String(key).split("-");
+  var d = parseInt(parts[0], 10);
+  var p = parseInt(parts[1], 10);
+  var table = ((GEN_PREVIEW.plans || {})[GEN_SEC] || {});
+  var cur = table[key] || {};
+  var h = "<div class='muted' style='margin-bottom:12px'>" + esc(((S.school || {}).days || [])[d]) + " - " + esc((((S.school || {}).periods || [])[p] || {}).name) + " - " + esc(sectionName(GEN_SEC)) + "</div>";
+  h = h + "<label class='f'><span>Subject</span><select id='gpSub'><option value=''>- free period -</option>" + optionsFor(S.subjects, cur.subject_id || "") + "</select></label>";
+  h = h + "<label class='f'><span>Teacher</span><select id='gpTch'><option value=''>- none -</option>" + optionsFor(S.teachers, cur.teacher_id || "") + "</select></label>";
+  h = h + "<label class='f'><span>Classroom</span><select id='gpRoom'><option value=''>- none -</option>" + optionsFor(S.rooms, cur.room_id || "") + "</select></label>";
+  h = h + "<div class='note'>This changes the preview only. Nothing is saved until you approve.</div>";
+  modal("Change this period", h, function(done){
+    var sub = $("gpSub").value;
+    if (sub === "") {
+      delete table[key];
+    } else {
+      table[key] = {subject_id: sub, teacher_id: $("gpTch").value, room_id: $("gpRoom").value};
+    }
+    GEN_PREVIEW.plans[GEN_SEC] = table;
+    closeModal();
+    genPreviewGrid();
+    toast("Preview changed - validate or approve", "ok");
+  }, "Apply");
+}
+function genCheckHtml(d){
+  var hard = d.hard || 0;
+  var inc = d.incomplete || 0;
+  var h = "<div class='card'><h2>Validation of this preview</h2>";
+  if (d.clean) {
+    h = h + "<div class='okbox'>No rule is broken and every weekly requirement is met.</div>";
+  } else {
+    h = h + "<div class='warnbox'>" + hard + " hard rule problem(s) and " + inc + " shortfall(s).</div>";
+    for (var i = 0; i < (d.violations || []).length; i++) {
+      h = h + "<div class='note'>" + esc(d.violations[i].text) + "</div>";
+    }
+  }
+  h = h + "<div class='muted' style='font-size:12.5px;margin-top:8px'>" + (d.lessons || 0) + " lesson(s) in the preview across " + (d.slots || 0) + " teaching period(s) a week.</div>";
+  return h + "</div>";
+}
+function runGenerate(isRegen){
+  var ids = chosenSections();
+  if (ids.length === 0) { toast("Choose at least one class.", "err"); return; }
+  var rooms = true;
+  if ($("optRooms")) { rooms = $("optRooms").checked; }
+  $("genOut").innerHTML = "<div class='card'><div class='empty'>" + (isRegen ? "Regenerating..." : "Generating...") + "</div></div>";
+  api("timetable.generate", {section_ids: ids, gen_opts: {assign_rooms: rooms}}).then(function(d){
+    GEN_PREVIEW = d;
+    GEN_SEC = "";
+    $("genOut").innerHTML = genResultHtml(d);
+    if (d.feasible !== false) {
+      genPreviewGrid();
+      if ($("gpApprove")) { $("gpApprove").onclick = approveGenerated; }
+      if ($("gpRegen")) { $("gpRegen").onclick = function(){ runGenerate(true); }; }
+      if ($("gpValidate")) { $("gpValidate").onclick = validatePreview; }
+      if ($("gpCancel")) { $("gpCancel").onclick = cancelGenerated; }
+      validatePreview();
+    } else {
+      if ($("gpAgain")) { $("gpAgain").onclick = function(){ runGenerate(false); }; }
+    }
+  }).catch(function(e){ $("genOut").innerHTML = ""; fail(e); });
+}
+function validatePreview(){
+  if (!GEN_PREVIEW || !GEN_PREVIEW.plans) { return; }
+  if (!$("gpCheck")) { return; }
+  $("gpCheck").innerHTML = "<div class='card'><div class='empty'>Checking...</div></div>";
+  api("timetable.validate", {plans: GEN_PREVIEW.plans}).then(function(d){
+    if ($("gpCheck")) { $("gpCheck").innerHTML = genCheckHtml(d); }
+  }).catch(function(e){ if ($("gpCheck")) { $("gpCheck").innerHTML = ""; } fail(e); });
+}
+function approveGenerated(){
+  if (!GEN_PREVIEW || !GEN_PREVIEW.plans) { return; }
+  var lessons = 0;
+  for (var k in GEN_PREVIEW.plans) {
+    for (var s in (GEN_PREVIEW.plans[k] || {})) { if ((GEN_PREVIEW.plans[k][s] || {}).subject_id) { lessons = lessons + 1; } }
+  }
+  var body = "<div class='note'>This saves " + lessons + " lesson(s) and replaces the timetable of the classes in this preview.</div>";
+  if ((GEN_PREVIEW.unplaced || []).length > 0 || (GEN_PREVIEW.violations || []).length > 0) {
+    body = body + "<div class='warnbox'>This preview still has problems. Saving it stores an incomplete timetable.</div>";
+  }
+  modal("Approve and save", body, function(done){
+    api("timetable.approve", {plans: GEN_PREVIEW.plans}).then(function(d){
+      closeModal();
+      if (d.saved) {
+        GEN_PREVIEW = null;
+        toast("Timetable saved", "ok");
+        refresh().then(function(){ go("timetable"); });
+      } else {
+        done();
+        toast(d.error || "Not saved", "err");
+      }
+    }).catch(function(e){ done(); fail(e); });
+  }, "Save");
+}
+function cancelGenerated(){
+  GEN_PREVIEW = null;
+  GEN_SEC = "";
+  toast("Preview discarded - nothing was saved", "ok");
+  go("generate");
+}
+function validateStored(){
+  api("timetable.validate", {}).then(function(d){
+    var h = "<div class='card'><h2>Validation of the saved timetable</h2>";
+    if (d.clean) {
+      h = h + "<div class='okbox'>The saved timetable breaks no rule and meets every weekly requirement.</div>";
+    } else {
+      h = h + "<div class='warnbox'>" + (d.hard || 0) + " hard rule problem(s) and " + (d.incomplete || 0) + " shortfall(s) were found.</div>";
+      for (var i = 0; i < (d.violations || []).length; i++) {
+        h = h + "<div class='note'>" + esc(d.violations[i].text) + "</div>";
+      }
+    }
+    h = h + "<div class='muted' style='font-size:12.5px;margin-top:8px'>" + (d.lessons || 0) + " lesson(s) stored.</div></div>";
+    $("genOut").innerHTML = h;
+  }).catch(fail);
 }
 document.addEventListener("DOMContentLoaded", function(){
   // Tell Telegram the page is ready and let it use the full height.
