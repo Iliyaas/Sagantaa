@@ -301,7 +301,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6j5-zLc2F8zeSX-GhiTkvQ_h1s-UERCkWkxs46aSF6CJIPqVOlVcEE3vXtTCFQJNWiMUK7k7Dq4BIFSdJzz-fb1YkMxOwVtxGb9WXGUxbbVMAwWl1bi9X5plWHXC7Ti98favE3XYAoTZMH7VnnJ7QdBbGBOBv4Xb8KwlzsvDyRXGUhP5ejqby2b4PDbeft3EtkzN";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6kaStFBwgYQMtlq0EyMEX27YYfIjeo2iJbv0-CGVrYS5EnzDSE3CRGaKHazHhKn_i_9upvZry8rEedslOy7yvCpdjUOE08Lvsxe5A7og1qCNypYdWw1GQHsGqCgyr2lj3XTCznQpB9m4PmF9YpLufqTRIa9J0CejCNqD6nIqFIirTQao_oxtmXtMolYDC_pzxrob";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -2175,12 +2175,32 @@ function admView(){
   h = h + "<div class='card'><div class='note'>There are no passwords. A person's identity is their Telegram account, checked on the server. "
        + "<b>Super administrator</b>: everything, including roles. <b>School administrator</b>: teachers, classes, subjects, rooms, periods, generation and export. "
        + "<b>Teacher</b>: their own classes and timetable. <b>Student</b>: their own class timetable.</div>";
+  h = h + "<div style='display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:12px'>";
+  h = h + "<label class='f' style='flex:1;min-width:170px;margin:0'><span>Search<span class='muted'> name, username or Telegram ID</span></span><input id='uQ' placeholder='search people'></label>";
+  h = h + "<label class='f' style='margin:0'><span>Role</span><select id='uRoleF'><option value=''>All roles</option>" + roleSelectHtml(USER_F.role) + "</select></label>";
+  h = h + "<span class='pill' id='uCount'></span>";
+  h = h + "</div>";
+  var uq = String(USER_F.q || "").toLowerCase();
+  var list = [];
+  for (var ui = 0; ui < (S.users || []).length; ui++) {
+    var cand = S.users[ui];
+    if (USER_F.role !== "" && String(cand.role) !== USER_F.role) { continue; }
+    if (uq !== "") {
+      var hay = (String(cand.name || "") + " " + String(cand.username || "") + " " +
+                 String(cand.tg_id || "") + " " + String(cand.role || "")).toLowerCase();
+      if (hay.indexOf(uq) < 0) { continue; }
+    }
+    list.push(cand);
+  }
   if ((S.users || []).length === 0) {
     h = h + "<div class='empty'>Nobody has opened the app yet.</div>";
   } else {
-    h = h + "<div class='tblwrap'><table><thead><tr><th>Name</th><th>Telegram</th><th>Role</th><th>Linked to</th><th></th></tr></thead><tbody>";
-    for (var i = 0; i < S.users.length; i++) {
-      var u = S.users[i];
+    h = h + "<div class='tblwrap'><table><thead><tr><th>Name</th><th>Telegram</th><th>Role</th><th>Linked to</th><th>Status</th><th></th></tr></thead><tbody>";
+    if (list.length === 0) {
+      h = h + "<tr><td colspan='6' class='muted'>Nobody matches that search.</td></tr>";
+    }
+    for (var i = 0; i < list.length; i++) {
+      var u = list[i];
       var tg = "@" + esc(u.username || "");
       if (!u.username) { tg = esc(u.tg_id); }
       var linked = "";
@@ -2191,7 +2211,18 @@ function admView(){
       h = h + "<tr><td><b>" + esc(u.name) + "</b>" + (mine ? " <span class='pill ok'>you</span>" : "") + "</td>";
       h = h + "<td class='muted'>" + tg + "</td>";
       h = h + "<td><span class='pill " + esc(u.role) + "'>" + esc(u.role_label || u.role) + "</span></td>";
-      h = h + "<td>" + linked + "</td><td style='text-align:right;white-space:nowrap'>";
+      h = h + "<td>" + linked + "</td>";
+      // Account status: active, inactive, or never opened. Nothing is disabled by it.
+      var st = String(u.status || "");
+      var stCls = "muted";
+      if (st === "active") { stCls = "ok"; }
+      else if (st === "inactive") { stCls = "warn"; }
+      h = h + "<td><span class='pill " + stCls + "'>" + esc(st || "-") + "</span>";
+      if (u.role === "teacher" && u.can_edit) {
+        h = h + " <span class='pill ok'>may edit lessons</span>";
+      }
+      h = h + "</td>";
+      h = h + "<td style='text-align:right;white-space:nowrap'>";
       if (canWrite()) {
         // A school administrator may manage roles too. The server still refuses
         // any attempt to grant a role at or above the caller's own level.
@@ -2201,6 +2232,12 @@ function admView(){
         if (u.role === "teacher" || u.role === "student") {
           h = h + "<button class='sm' data-u-link='" + esc(u.tg_id) + "'>Link</button> ";
         }
+        // Teacher edit permission lives here: grant it without giving them the
+        // management screens.
+        if (u.role === "teacher") {
+          h = h + "<button class='sm' data-u-permit='" + esc(u.tg_id) + "'>" +
+                 (u.can_edit ? "Stop editing" : "Allow editing") + "</button> ";
+        }
       }
       if (isSuper() && !mine) { h = h + "<button class='sm bad' data-u-del='" + esc(u.tg_id) + "'>Remove</button>"; }
       h = h + "</td></tr>";
@@ -2209,6 +2246,36 @@ function admView(){
   }
   h = h + "</div>";
   $("main").innerHTML = h;
+
+  if ($("uCount")) {
+    $("uCount").innerHTML = (list.length === (S.users || []).length)
+      ? (list.length + " people")
+      : (list.length + " of " + (S.users || []).length);
+  }
+  if ($("uQ")) {
+    $("uQ").value = USER_F.q;
+    $("uQ").oninput = function(){
+      USER_F.q = this.value;
+      admView();
+      if ($("uQ")) { $("uQ").focus(); }
+    };
+  }
+  if ($("uRoleF")) {
+    $("uRoleF").value = USER_F.role;
+    $("uRoleF").onchange = function(){ USER_F.role = this.value; admView(); };
+  }
+  var pm = $("main").querySelectorAll("[data-u-permit]");
+  for (var p2 = 0; p2 < pm.length; p2++) {
+    pm[p2].onclick = function(){
+      var tg = this.getAttribute("data-u-permit");
+      var u = findUser(tg);
+      var allow = !u.can_edit;
+      api("users.permit", {tg_id: tg, can_edit: allow}).then(function(){
+        toast(allow ? "This teacher may now edit their own lessons." : "Editing turned off for this teacher.", "ok");
+        refresh().then(function(){ admView(); });
+      }).catch(fail);
+    };
+  }
 
   var rs2 = $("main").querySelectorAll("[data-u-role]");
   for (var r = 0; r < rs2.length; r++) {
@@ -2262,6 +2329,9 @@ function admView(){
     };
   }
 }
+// Search and role filter for the Users table. Held outside the view so the
+// choice survives an edit or a refresh.
+var USER_F = {q: "", role: ""};
 function findUser(tg){
   for (var i = 0; i < (S.users || []).length; i++) {
     if (String(S.users[i].tg_id) === String(tg)) { return S.users[i]; }
