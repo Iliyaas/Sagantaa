@@ -301,7 +301,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6kzEGTQbnlKHUtiLuUms5CH8jMI0lvHBSLIGKoLJxOxNyY240Odc3taob-gmPuaDO39CfGHBinFmW8AADQTaZZx2HiS5uraKfwJE02jEEX6hpgS-g2ZAj8oc7NsSlbu5iOKXqGEQR9Cb01cH8K88JTNACAO0dEFaGM613V90tcrBqrYZJ9nDuQWNLKowJoKTyXrk";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6lclWxg_gKP8GbSTk-qiXIWA0dG6Wz0bTHNiJEiI0oAoiLzpqoTTpV7mXpdWoiMC5OSJ0DvROlEbT-iTfOPHK_X0CwTbcwEDMtzkVkivhhooAZY99AufR9P68U3YslaOs7HvZE8dZgEbrdiH8rGzxuathsgPh5rEuZWdGNjXd8J8AC2kwhBgaf4wWja-g5xqOfno";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -2026,11 +2026,11 @@ function printSheetHtml(d){
   h = h + "<div class='pt-head'>";
   if (d.logo) { h = h + "<div class='ptlogo'>" + esc(d.logo) + "</div>"; }
   h = h + "<div style='flex:1'><h1>" + esc(d.school || "School") + "</h1>";
-  h = h + "<div class='ptsub'>SCHOOL WEEKLY TIMETABLE &nbsp;/&nbsp; TURAAGA BARNOOTAA TORBAANII</div>";
+  h = h + "<div class='ptsub'>SCHOOL WEEKLY TIMETABLE &nbsp;/&nbsp; SAGANTAA BARNOOTAA TORBAANII</div>";
   h = h + "<div class='ptyr'>Academic year / Bara Barnootaa: " + esc(d.year || "-") + "</div></div></div>";
 
   h = h + "<table class='pt'><thead><tr>";
-  h = h + "<th rowspan='2' style='width:24px'>Guyyoota<br>Torbaanii</th>";
+  h = h + "<th rowspan='2' style='width:24px'>Guyyaa</th>";
   h = h + "<th rowspan='2' style='width:48px'>" + (PRINT_OPT.show_times ? "Yeroo" : "Walmi") + "</th>";
   h = h + "<th colspan='" + cls.length + "'>Daree Barnootaa</th></tr><tr>";
   for (var i = 0; i < cls.length; i++) {
@@ -2065,7 +2065,7 @@ function printSheetHtml(d){
 
   var tch = d.teachers || [];
   h = h + "<div class='ptsum'><h2>Teacher workload and subject assignment summary</h2>";
-  h = h + "<table class='ptsumt'><thead><tr><th style='width:26px'>T.L</th><th style='width:130px'>Maqaa Guutuu Barsiisota</th><th>Gosa Barnootaarsa Barsiisu</th><th style='width:56px'>Baay'ina Wajii</th></tr></thead><tbody>";
+  h = h + "<table class='ptsumt'><thead><tr><th style='width:26px'>T.L</th><th style='width:130px'>Maqaa Guutuu Barsiisota</th><th>Gosa Barnootaarsa Barsiisu</th><th style='width:56px'>Baay'ina Waytii</th></tr></thead><tbody>";
   if (tch.length === 0) {
     h = h + "<tr><td colspan='4' class='muted'>No teachers are recorded.</td></tr>";
   }
