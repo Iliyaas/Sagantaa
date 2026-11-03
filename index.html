@@ -301,7 +301,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6RrFQvCRKua5EmPYuumYZzCgEIYRc4qhJcmkFpVtiOw--JQ0ukdeiExlQZIHoqWcnwMmhhdpiFFu8Yow1YZtW5jNwpQ1znTeHyPjk__-R5YDEl5GiXywbh9M6AqAPTyOvLf_NxJCit9-ofY-kq9uzn_DN7sdS95dgJfdI_lBzUluS5zjGr9PG6xF72woPaZLl8us";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6j5-zLc2F8zeSX-GhiTkvQ_h1s-UERCkWkxs46aSF6CJIPqVOlVcEE3vXtTCFQJNWiMUK7k7Dq4BIFSdJzz-fb1YkMxOwVtxGb9WXGUxbbVMAwWl1bi9X5plWHXC7Ti98favE3XYAoTZMH7VnnJ7QdBbGBOBv4Xb8KwlzsvDyRXGUhP5ejqby2b4PDbeft3EtkzN";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -380,6 +380,15 @@ function isSuper(){
   if (S.me.permissions && S.me.permissions.is_super) { return true; }
   return S.me.role === "super_admin";
 }
+function canEditTt(){
+  // May this person change lessons? Administrators always may; a teacher only
+  // when an administrator has allowed it, and then only their own lessons. This
+  // is a separate right from canWrite, which unlocks the management screens.
+  if (canWrite()) { return true; }
+  if (!S.me) { return false; }
+  if (S.me.permissions && S.me.permissions.can_edit_tt) { return true; }
+  return false;
+}
 function isWrite(){ return canWrite(); }
 function isOwner(){ return isSuper(); }
 function roleLabel(){
@@ -410,6 +419,12 @@ function refresh(){
     applyState(d);
     return d;
   });
+}
+function needsSchool(d){
+  // True only when this Telegram account belongs to no school yet. The backend
+  // decides this; the page never guesses.
+  if (!d) { return false; }
+  return (d.needs_school === true) || (d.school === null) || (d.school === undefined);
 }
 function fail(e){ toast(e.message || String(e), "err"); }
 
@@ -446,6 +461,11 @@ function boot(){
   api("state").then(function(d){
     splash(false);
     applyState(d);
+    if (needsSchool(d)) {
+      setupView();
+      return;
+    }
+    setupShell(false);
     go("dash");
   }).catch(function(e){
     splash(false);
@@ -465,6 +485,8 @@ function applyState(d){
   S.me = d.me || null;
   S.conflicts = d.conflicts || [];
   S.notice = d.notice || "";
+  S.invite = d.invite || "";
+  S.schoolId = d.school_id || "";
   var bn = $("brandName");
   if (bn && bn.parentNode && bn.parentNode.parentNode) {
     var brandBox = bn.parentNode.parentNode;
@@ -483,6 +505,90 @@ function logout(){
   // No sign-out: your Telegram account is your identity. Closing the app is enough.
   toast("You stay signed in with your Telegram account.", "ok");
   go("dash");
+}
+// ---- first run: create a school, or join one with an invitation code ----
+var SETUP_MODE = "create";
+var NEW_SCHOOL = {name: "", location: "", academic_year: "", school_days: "5",
+                  periods_per_day: "6", start_time: "08:00", end_time: "13:00",
+                  logo_emoji: ""};
+function setupShell(on){
+  var sd = $("side");
+  if (sd) { sd.style.display = on ? "none" : ""; }
+  var mn = $("mnav");
+  if (mn) { mn.style.display = on ? "none" : ""; }
+}
+function setupView(){
+  // Shown only when this Telegram account belongs to no school yet. Nothing is
+  // copied from any other school: the new school starts completely empty.
+  SETUP_MODE = SETUP_MODE || "create";
+  setupShell(true);
+  var h = "<div style='max-width:640px;margin:0 auto'>";
+  h = h + "<div class='card'><h1 style='margin:0 0 6px 0;font-size:22px'>Create Your School</h1>";
+  h = h + "<div class='muted' style='font-size:13px'>Your Telegram account is your login. There is no password. "
+       + "Your school gets its own private workspace, separate from every other school.</div></div>";
+  h = h + "<div class='card'><div style='display:flex;gap:8px;margin-bottom:14px'>";
+  h = h + "<button class='sm" + (SETUP_MODE === "create" ? " primary" : "") + "' id='stNew'>Create a school</button>";
+  h = h + "<button class='sm" + (SETUP_MODE === "join" ? " primary" : "") + "' id='stJoin'>Join with a code</button>";
+  h = h + "</div>";
+  if (SETUP_MODE === "join") {
+    h = h + "<label class='f'><span>Invitation code</span><input id='stCode' placeholder='for example 91E5FF' maxlength='12' autocapitalize='characters'></label>";
+    h = h + "<div class='note'>Ask the school administrator for their invitation code. "
+         + "You join as a student until they give you another role.</div>";
+    h = h + "<button class='primary' id='stGoJoin' style='margin-top:10px'>Join this school</button>";
+  } else {
+    h = h + "<label class='f'><span>School name</span><input id='stName' value='" + esc(NEW_SCHOOL.name) + "' maxlength='80' placeholder='for example Xaliilaa Primary School'></label>";
+    h = h + "<label class='f'><span>School location</span><input id='stLoc' value='" + esc(NEW_SCHOOL.location) + "' maxlength='120' placeholder='town or district'></label>";
+    h = h + "<div class='row'><label class='f'><span>Academic year</span><input id='stYear' value='" + esc(NEW_SCHOOL.academic_year) + "' maxlength='40' placeholder='for example 2026'></label>";
+    h = h + "<label class='f'><span>Logo symbol</span><input id='stLogo' value='" + esc(NEW_SCHOOL.logo_emoji) + "' maxlength='4' placeholder='an emoji'></label></div>";
+    h = h + "<div class='row'><label class='f'><span>School days per week</span><input id='stDays' type='number' min='1' max='7' value='" + esc(NEW_SCHOOL.school_days) + "'></label>";
+    h = h + "<label class='f'><span>Periods per day</span><input id='stPer' type='number' min='1' max='14' value='" + esc(NEW_SCHOOL.periods_per_day) + "'></label></div>";
+    h = h + "<div class='row'><label class='f'><span>School starts</span><input id='stStart' value='" + esc(NEW_SCHOOL.start_time) + "' placeholder='08:00'></label>";
+    h = h + "<label class='f'><span>School ends</span><input id='stEnd' value='" + esc(NEW_SCHOOL.end_time) + "' placeholder='13:00'></label></div>";
+    h = h + "<div class='note'>You become the School Administrator of this new school. "
+         + "Teachers, subjects, classes and timetables all start empty, so you add your own.</div>";
+    h = h + "<button class='primary' id='stGoCreate' style='margin-top:10px'>Create my school</button>";
+  }
+  h = h + "</div>";
+  h = h + "<div id='stMsg'></div>";
+  h = h + "</div>";
+  $("main").innerHTML = h;
+  if ($("stNew")) { $("stNew").onclick = function(){ SETUP_MODE = "create"; setupView(); }; }
+  if ($("stJoin")) { $("stJoin").onclick = function(){ SETUP_MODE = "join"; setupView(); }; }
+  if ($("stGoCreate")) { $("stGoCreate").onclick = function(){ createSchool(); }; }
+  if ($("stGoJoin")) { $("stGoJoin").onclick = function(){ joinSchool(); }; }
+}
+function setupFail(msg){
+  if ($("stMsg")) { $("stMsg").innerHTML = "<div class='errbox'>" + esc(msg) + "</div>"; }
+  else { toast(msg, "err"); }
+}
+function createSchool(){
+  var nm = $("stName").value.trim();
+  if (nm === "") { setupFail("Enter your school name."); $("stName").focus(); return; }
+  var body = {name: nm,
+              location: $("stLoc").value.trim(),
+              academic_year: $("stYear").value.trim(),
+              logo_emoji: $("stLogo").value.trim(),
+              school_days: $("stDays").value,
+              periods_per_day: $("stPer").value,
+              start_time: $("stStart").value.trim(),
+              end_time: $("stEnd").value.trim()};
+  splash(true);
+  api("school.create", {school: body}).then(function(d){
+    splash(false);
+    SETUP_MODE = "create";
+    toast("School created. You are the administrator.", "ok");
+    refresh().then(function(){ setupShell(false); go("dash"); });
+  }).catch(function(e){ splash(false); setupFail(e.message || String(e)); });
+}
+function joinSchool(){
+  var code = $("stCode").value.trim().toUpperCase();
+  if (code === "") { setupFail("Enter the invitation code."); $("stCode").focus(); return; }
+  splash(true);
+  api("school.join", {invite: code}).then(function(d){
+    splash(false);
+    toast("You joined the school.", "ok");
+    refresh().then(function(){ setupShell(false); go("dash"); });
+  }).catch(function(e){ splash(false); setupFail(e.message || String(e)); });
 }
 
 
@@ -1005,6 +1111,16 @@ function settingsView(){
   h = h + "<div class='card'><h2>School days<span>one per line, in order</span></h2><textarea id='scDays' rows='6'" + rd + ">" + esc((S.school.days || []).join("\n")) + "</textarea></div>";
   h = h + "<div class='card'><h2>Periods<span>name, start, end</span></h2><div id='perBox'></div>";
   if (isWrite()) { h = h + "<button class='sm' id='btnAddPer'>+ Add period</button>"; }
+  h = h + "</div>";
+  h = h + "<div class='card'><h2>This school<span>your private workspace</span></h2>";
+  h = h + "<div class='muted' style='font-size:12.5px'>School id: <code>" + esc(S.schoolId || "-") + "</code></div>";
+  if (S.invite) {
+    h = h + "<label class='f' style='margin-top:10px'><span>Invitation code<span class='muted'> share it so teachers and students can join this school</span></span>";
+    h = h + "<input id='scInvite' value='" + esc(S.invite) + "' readonly onclick='this.select()'></label>";
+    h = h + "<div class='note'>Anyone with this code joins THIS school only. They join as a student until you give them a role in Users.</div>";
+  } else {
+    h = h + "<div class='note'>Only an administrator can see the invitation code.</div>";
+  }
   h = h + "</div>";
   h = h + "<div class='card'><h2>Printed names and day labels<span>used on the one-page school timetable</span></h2>";
   h = h + "<div class='row'><label class='f'><span>Prepared by</span><input id='scPrep' value='" + esc(S.school.prepared_by || "") + "' maxlength='60'" + rd + "></label>";
@@ -2076,7 +2192,9 @@ function admView(){
       h = h + "<td class='muted'>" + tg + "</td>";
       h = h + "<td><span class='pill " + esc(u.role) + "'>" + esc(u.role_label || u.role) + "</span></td>";
       h = h + "<td>" + linked + "</td><td style='text-align:right;white-space:nowrap'>";
-      if (isSuper()) {
+      if (canWrite()) {
+        // A school administrator may manage roles too. The server still refuses
+        // any attempt to grant a role at or above the caller's own level.
         if (!mine) { h = h + "<button class='sm' data-u-role='" + esc(u.tg_id) + "'>Role</button> "; }
       }
       if (canWrite()) {
@@ -3850,7 +3968,8 @@ function ttFiltersHtml(){
   return h;
 }
 function ttReadOnly(){
-  return !canWrite();
+  // A permitted teacher is not read-only: they may edit their own lessons.
+  return !canEditTt();
 }
 function ttBindFilters(){
   function on(id, fn){
