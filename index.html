@@ -301,7 +301,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6kaStFBwgYQMtlq0EyMEX27YYfIjeo2iJbv0-CGVrYS5EnzDSE3CRGaKHazHhKn_i_9upvZry8rEedslOy7yvCpdjUOE08Lvsxe5A7og1qCNypYdWw1GQHsGqCgyr2lj3XTCznQpB9m4PmF9YpLufqTRIa9J0CejCNqD6nIqFIirTQao_oxtmXtMolYDC_pzxrob";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6kzEGTQbnlKHUtiLuUms5CH8jMI0lvHBSLIGKoLJxOxNyY240Odc3taob-gmPuaDO39CfGHBinFmW8AADQTaZZx2HiS5uraKfwJE02jEEX6hpgS-g2ZAj8oc7NsSlbu5iOKXqGEQR9Cb01cH8K88JTNACAO0dEFaGM613V90tcrBqrYZJ9nDuQWNLKowJoKTyXrk";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -523,11 +523,11 @@ function setupView(){
   SETUP_MODE = SETUP_MODE || "create";
   setupShell(true);
   var h = "<div style='max-width:640px;margin:0 auto'>";
-  h = h + "<div class='card'><h1 style='margin:0 0 6px 0;font-size:22px'>Create Your School</h1>";
-  h = h + "<div class='muted' style='font-size:13px'>Your Telegram account is your login. There is no password. "
+  h = h + "<div class='card'><h1 style='margin:0 0 6px 0;font-size:22px'>Welcome to Smart School Timetable Generator!</h1>";
+  h = h + "<div class='muted' style='font-size:13px'>Your Telegram account is your login. There is no password and nobody has to approve you. "
        + "Your school gets its own private workspace, separate from every other school.</div></div>";
   h = h + "<div class='card'><div style='display:flex;gap:8px;margin-bottom:14px'>";
-  h = h + "<button class='sm" + (SETUP_MODE === "create" ? " primary" : "") + "' id='stNew'>Create a school</button>";
+  h = h + "<button class='sm" + (SETUP_MODE === "create" ? " primary" : "") + "' id='stNew'>+ Create My School</button>";
   h = h + "<button class='sm" + (SETUP_MODE === "join" ? " primary" : "") + "' id='stJoin'>Join with a code</button>";
   h = h + "</div>";
   if (SETUP_MODE === "join") {
@@ -953,7 +953,21 @@ function dashView(){
   h = h + "</div>";
   h = h + "<div class='statline'><span class='pill'>" + nd + " school days</span><span class='pill'>" + np + " periods a day</span><span class='pill'>" + weekly + " slots per section</span></div>";
   h = h + "</div>";
-  if (S.notice) { h = h + "<div class='card'><div class='warnbox' style='margin:0'>" + esc(S.notice) + "</div></div>"; }
+  if (S.notice) {
+    h = h + "<div class='card'><div class='warnbox' style='margin:0'>" + esc(S.notice) + "</div>";
+    // Anyone who is only a guest in somebody else's school can start their own
+    // at any time, without asking that school's administrator or the bot owner.
+    if (!canWrite()) {
+      h = h + "<div style='margin-top:10px'><button class='primary' id='btnOwnSchool'>+ Create My School</button></div>";
+      h = h + "<div class='muted' style='font-size:12px;margin-top:6px'>You can start your own school. "
+           + "It is completely separate from this one and nobody has to approve it.</div>";
+    }
+    h = h + "</div>";
+  } else if (!canWrite() && S.me) {
+    h = h + "<div class='card'><div class='note'>You are a member of "
+         + esc((S.school || {}).name || "this school") + ". You can also start a school of your own.</div>"
+         + "<button class='sm primary' id='btnOwnSchool'>+ Create My School</button></div>";
+  }
   h = h + "<div class='card'><h2>Timetable generation status</h2>";
   h = h + "<div style='display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px'><span class='pill " + esc(stateCls) + "'>" + esc(state) + "</span><span class='muted' style='font-size:12.5px'>" + filled + " lessons scheduled of " + slots + " possible</span></div>";
   h = h + "<div style='height:9px;background:#131a29;border-radius:20px;overflow:hidden'><div style='height:100%;width:" + pct + "%;background:linear-gradient(90deg,#3d8bfd,#2ecc8f)'></div></div>";
@@ -1008,6 +1022,13 @@ function dashView(){
   $("btnQuickView").onclick = function(){ go("timetable"); };
   if ($("btnQuickSet")) { $("btnQuickSet").onclick = function(){ go("settings"); }; }
   if ($("btnQuickUsers")) { $("btnQuickUsers").onclick = function(){ go("admins"); }; }
+  // Starting your own school is always available to a guest member.
+  if ($("btnOwnSchool")) {
+    $("btnOwnSchool").onclick = function(){
+      SETUP_MODE = "create";
+      setupView();
+    };
+  }
 }
 function classesView(){
   var right = isWrite() ? "<button class='primary' id='btnNew'>+ Add class</button>" : "";
