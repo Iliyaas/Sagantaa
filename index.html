@@ -305,7 +305,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6ypRT5kafiggtWCQqwUIkpKCDDJlbUP_K4E9goYUB6BmeRMF0ENQa6Hy5RiXXdX0MfAmhfLoqgcZ3-xj_N9Q2ng2pmMKU4PIqoN8ArKkZm0JqgFKERpDUsRIpcfkUL8p4n240nl65ntR7wqzg-93_mrd6z_RfdgCBi_qqroYJjrfHcrskOZan6xDZuNGMrmM7rcc";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6zFrSnHU2GtZGjyilO8e-nFEoXgyWQmMmnOAcy7RYqZfywmQikVgHf_mcEKcr8zpqLX8F5TmCLdsJCy_BOB0ckas-O0H78tmDeolIRrOYbpusMToRDpChFifyyek9BNjPrJOqPiH5PjcaZTzj1bQ3ERTy29kZ-ts6kEuiiQAKFJs9HAC2TCiQM6tFp6fF34JKDzb";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -1402,9 +1402,12 @@ function periodsView(){
   $("main").innerHTML = h;
   PD = [];
   for (var i = 0; i < np; i++) {
-    PD.push({name: S.school.periods[i].name || "", start: S.school.periods[i].start || "", end: S.school.periods[i].end || ""});
+    // Keep each block's kind (lesson, break, lunch) so re-saving this screen can
+    // never turn a break into a teaching period.
+    PD.push({name: S.school.periods[i].name || "", start: S.school.periods[i].start || "",
+             end: S.school.periods[i].end || "", kind: S.school.periods[i].kind || "lesson"});
   }
-  if (PD.length === 0) { PD.push({name: "P1", start: "", end: ""}); }
+  if (PD.length === 0) { PD.push({name: "P1", start: "", end: "", kind: "lesson"}); }
   drawPD();
   if ($("pdAdd")) {
     $("pdAdd").onclick = function(){
@@ -1448,7 +1451,8 @@ function collectPD(){
     out.push({
       name: $("pdBox").querySelector("[data-pdn='" + i + "']").value.trim(),
       start: $("pdBox").querySelector("[data-pds='" + i + "']").value.trim(),
-      end: $("pdBox").querySelector("[data-pde='" + i + "']").value.trim()
+      end: $("pdBox").querySelector("[data-pde='" + i + "']").value.trim(),
+      kind: (PD[i] && PD[i].kind) ? PD[i].kind : "lesson"
     });
   }
   PD = out;
@@ -1470,9 +1474,26 @@ function savePD(){
   if (clean.length > 7) { toast("A week has 7 days at most.", "err"); return; }
   collectPD();
   if (PD.length === 0) { toast("Add at least one period.", "err"); return; }
+  // Validate every block on its own: a run of periods may have gaps between
+  // them (for example a break from 04:00 to 04:15), which is perfectly valid.
+  // Only the block's own end-before-start is an error.
   for (var p = 0; p < PD.length; p++) {
-    if (PD[p].name === "") { toast("Period " + (p + 1) + " needs a name.", "err"); return; }
-    if (badTime(PD[p].start) || badTime(PD[p].end)) { toast("Period " + PD[p].name + ": use times like 08:45.", "err"); return; }
+    var nmP = PD[p].name;
+    if (nmP === "") { toast("Period " + (p + 1) + " needs a name.", "err"); return; }
+    if (PD[p].start === "" || PD[p].end === "") {
+      toast(nmP + ": enter both a start and an end time, for example 08:00 and 08:40.", "err");
+      return;
+    }
+    if (badTime(PD[p].start) || badTime(PD[p].end)) {
+      toast(nmP + ": use a time like 08:45 (24-hour, with a colon).", "err");
+      return;
+    }
+    var ps = schedMin(PD[p].start);
+    var pe = schedMin(PD[p].end);
+    if (pe <= ps) {
+      toast(nmP + " ends at " + PD[p].end + ", which is not after its start " + PD[p].start + ".", "err");
+      return;
+    }
   }
   var school = {name: S.school.name || "My School", days: clean, periods: PD, logo_emoji: S.school.logo_emoji || ""};
   splash(true);
