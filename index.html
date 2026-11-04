@@ -136,6 +136,10 @@ table.pt{width: 100%; border-collapse: collapse; table-layout: fixed;}
 table.pt th, table.pt td{border: 1px solid #767e94; padding: 1px 2px; text-align: center; vertical-align: middle;}
 table.pt thead th{background: #1f3a5f; color: #fff; font-size: 8.6px; padding: 3px 2px;}
 table.pt thead th.ptcls{background: #eef4fc; color: #10161f; font-size: 8.4px;}
+/* The day and period headings span both header rows and read upwards, so a
+   narrow column can still show the whole word. */
+table.pt thead th.ptvh{writing-mode: vertical-rl; transform: rotate(180deg);
+  text-align: center; font-size: 8.2px; padding: 2px 1px; height: 46px;}
 table.pt td.ptday{width: 22px; font-size: 8.6px; font-weight: 700; writing-mode: vertical-rl; transform: rotate(180deg); background: #fff;}
 table.pt tr.ptodd td.ptper{background: #ecf1f9;}
 table.pt td.ptper{width: 46px; font-size: 8.2px; font-weight: 700;}
@@ -301,7 +305,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6mF0MVp5-ZMheLPx5rPJf3SudCCkhaHBXi0Tafia5Dh4tCNsSLHtt1WSIxWUK78S1KipKzoMmF--CjAZrbspCPKkrsVx8iPLzqomuT0nnT_2l3OYh3unn0pg2f-YYvi-nhF8PfH8jzfla3nVLhiz3Q8u8fqcFXxT5y1HJ-_QGkNR-Qmxnq_IyfdLBPqcRPUWf8o-";
+var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6ypRT5kafiggtWCQqwUIkpKCDDJlbUP_K4E9goYUB6BmeRMF0ENQa6Hy5RiXXdX0MfAmhfLoqgcZ3-xj_N9Q2ng2pmMKU4PIqoN8ArKkZm0JqgFKERpDUsRIpcfkUL8p4n240nl65ntR7wqzg-93_mrd6z_RfdgCBi_qqroYJjrfHcrskOZan6xDZuNGMrmM7rcc";
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -2030,10 +2034,12 @@ function printSheetHtml(d){
   h = h + "<div class='ptyr'>Academic year / Bara Barnootaa: " + esc(d.year || "-") + "</div></div></div>";
 
   h = h + "<table class='pt'><thead><tr>";
-  h = h + "<th rowspan='2' style='width:24px'>Guyyaa</th>";
+  // Both headings span the full header height and are turned 90 degrees, so there
+  // is no empty strip under them and the first weekday row starts right below.
+  h = h + "<th class='ptvh' rowspan='2' style='width:24px'>Guyyaa</th>";
   // The period column shows "Yeroo" when times are printed, and is otherwise left
-// blank on purpose. The cell stays, so the table keeps its width and alignment.
-  h = h + "<th rowspan='2' style='width:48px'>" + (PRINT_OPT.show_times ? "Yeroo" : "") + "</th>";
+  // blank on purpose. The cell stays, so the table keeps its width and alignment.
+  h = h + "<th class='ptvh' rowspan='2' style='width:48px'>" + (PRINT_OPT.show_times ? "Yeroo" : "") + "</th>";
   h = h + "<th colspan='" + cls.length + "'>Daree Barnootaa</th></tr><tr>";
   for (var i = 0; i < cls.length; i++) {
     h = h + "<th class='ptcls'>" + esc(cls[i].label) + "</th>";
