@@ -310,7 +310,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 // localStorage; a stale or mistyped value there made EVERY request fail with a
 // connection error, in that browser only. A stored value is now ignored and
 // replaced by the correct endpoint, so a bad leftover can never break the app.
-var API = "https://api.telebotcreator.com/new-webhook?data=gAAAAABq8O9iAfFG62CslSnL1e9R7X22WsW6e9YvsOkxDT4IxQqLCGF8gKIcjlUHUlsnYsrhKOaeSUDFw-DPdtIKbbVRRVC_kuFMLNW3YDSk3636wF4f6Y0Bcwchc0Z3WvD1RIIyUUuqejiGDaw8585DYbGjyoDwi0q13A3OxRLG9MuiJgMcMMr7gRAunyB3Bi2QLw7R7cH1";
+var API = "https://api.telebotcreator.com/new-webhook?data=gAAAAABq8PKQ-7O67JfcWjwfhUUZ0hymm-SY9tSivdFyUjHdtB2aVJNbvC4vEFFVLdlKJbi101aNu3_sFV658LTtJyFeRWRSGi75QU56RP4OgrmA7xplJIBAb7uo7ZRitqSszjUsCNWaSrMkie1rlCvNM970f3FtghXqszjsFj8hFsnqenrkmvlmZOuc2Oz0UWXlHgVdvjlR";
 try {
   if (localStorage.getItem("tt_api") !== null && localStorage.getItem("tt_api") !== API) {
     localStorage.setItem("tt_api", API);
@@ -354,7 +354,12 @@ function toast(m, kind){
 function api(action, extra){
   // If the page was built without an endpoint, say so plainly instead of letting
   // the browser fail every request and blaming CORS.
-  if (!API || API.indexOf("https://api.telebotcreator.com/new-webhook?data=gAAAAABq8O9iAfFG62CslSnL1e9R7X22WsW6e9YvsOkxDT4IxQqLCGF8gKIcjlUHUlsnYsrhKOaeSUDFw-DPdtIKbbVRRVC_kuFMLNW3YDSk3636wF4f6Y0Bcwchc0Z3WvD1RIIyUUuqejiGDaw8585DYbGjyoDwi0q13A3OxRLG9MuiJgMcMMr7gRAunyB3Bi2QLw7R7cH1") >= 0) {
+  // A usable endpoint always starts with http. The test must NOT look for the
+  // build marker: the build substitutes every occurrence of that marker in the
+  // page, including one written inside this very test, which would turn the test
+  // into "does the endpoint contain the endpoint" - always true - and block every
+  // request with the message below.
+  if (!API || String(API).slice(0, 4) !== "http") {
     return Promise.reject(new Error("This page was built without an API endpoint. Send /appfile to the bot, upload the new index.html to your host, then reload."));
   }
   var payload = {action: action, init_data: INIT};
