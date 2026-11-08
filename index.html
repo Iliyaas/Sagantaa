@@ -310,7 +310,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 // localStorage; a stale or mistyped value there made EVERY request fail with a
 // connection error, in that browser only. A stored value is now ignored and
 // replaced by the correct endpoint, so a bad leftover can never break the app.
-var API = "https://api.telebotcreator.com/new-webhook?data=gAAAAABq8OWb3QINp7xTnwCDFNXSw7ZWii2d-SgEb4-mRX5L2ZabTosWbr2hBjdXuWlRRKOJFA4dGwW7KBEP2oZ6TerQSI0oClmMn-mffoT93-kyglY1-XTpqBofCk4HcqR4OqwDMBwBfqflYXAboGUeUmVPYVgSD06kxTYf4_PBgwtMw5SpfMSBhJ_cBB8caRAAdkeSxKvC";
+var API = "https://api.telebotcreator.com/new-webhook?data=gAAAAABq8O9iAfFG62CslSnL1e9R7X22WsW6e9YvsOkxDT4IxQqLCGF8gKIcjlUHUlsnYsrhKOaeSUDFw-DPdtIKbbVRRVC_kuFMLNW3YDSk3636wF4f6Y0Bcwchc0Z3WvD1RIIyUUuqejiGDaw8585DYbGjyoDwi0q13A3OxRLG9MuiJgMcMMr7gRAunyB3Bi2QLw7R7cH1";
 try {
   if (localStorage.getItem("tt_api") !== null && localStorage.getItem("tt_api") !== API) {
     localStorage.setItem("tt_api", API);
@@ -354,7 +354,7 @@ function toast(m, kind){
 function api(action, extra){
   // If the page was built without an endpoint, say so plainly instead of letting
   // the browser fail every request and blaming CORS.
-  if (!API || API.indexOf("https://api.telebotcreator.com/new-webhook?data=gAAAAABq8OWb3QINp7xTnwCDFNXSw7ZWii2d-SgEb4-mRX5L2ZabTosWbr2hBjdXuWlRRKOJFA4dGwW7KBEP2oZ6TerQSI0oClmMn-mffoT93-kyglY1-XTpqBofCk4HcqR4OqwDMBwBfqflYXAboGUeUmVPYVgSD06kxTYf4_PBgwtMw5SpfMSBhJ_cBB8caRAAdkeSxKvC") >= 0) {
+  if (!API || API.indexOf("https://api.telebotcreator.com/new-webhook?data=gAAAAABq8O9iAfFG62CslSnL1e9R7X22WsW6e9YvsOkxDT4IxQqLCGF8gKIcjlUHUlsnYsrhKOaeSUDFw-DPdtIKbbVRRVC_kuFMLNW3YDSk3636wF4f6Y0Bcwchc0Z3WvD1RIIyUUuqejiGDaw8585DYbGjyoDwi0q13A3OxRLG9MuiJgMcMMr7gRAunyB3Bi2QLw7R7cH1") >= 0) {
     return Promise.reject(new Error("This page was built without an API endpoint. Send /appfile to the bot, upload the new index.html to your host, then reload."));
   }
   var payload = {action: action, init_data: INIT};
@@ -362,8 +362,18 @@ function api(action, extra){
   // The webhook only parses application/json: a text/plain or form-encoded body is
 // rejected with HTTP 400, which made every call in this app fail.
   return fetch(API, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)})
-    .then(function(r){ return r.text(); })
-    .then(function(txt){
+    .then(function(r){
+      // Keep the status: without it every failure looked like a network problem.
+      return r.text().then(function(t){ return {status: r.status, txt: t}; });
+    })
+    .then(function(res){
+      if (res.status !== 200 && res.txt.indexOf("{") < 0) {
+        // A gateway answer (502/504) or an empty body: say what came back.
+        throw new Error("The server answered HTTP " + res.status + " and sent no data. " +
+                        "This usually means the request took too long, so try generating " +
+                        "fewer classes at a time. (" + String(res.txt).slice(0, 80) + ")");
+      }
+      var txt = res.txt;
       var d = null;
       try { d = JSON.parse(txt); } catch (e) { d = null; }
       if (!d) { throw new Error("The API did not return JSON. Check the endpoint URL. " + txt.slice(0, 120)); }
@@ -379,7 +389,13 @@ function api(action, extra){
       return inner;
     }).catch(function(e){
       if (e && (e.message === "Failed to fetch" || e.name === "TypeError")) {
-        throw new Error("Could not reach the API. Usually the page and the API are on different hosts and the browser blocked the call (CORS). Check the endpoint under Advanced: API endpoint, or send /api to the bot for the right link.");
+        // A blocked request and a request that was cut off look identical here, so
+        // report both possibilities and the facts: this is off-line, wrong URL, or
+        // a call that took too long.
+        throw new Error("The app could not complete this request. Check your internet " +
+                        "connection and try again. If it keeps happening, open a few " +
+                        "classes at a time instead of all of them. (endpoint: " +
+                        String(API).replace(/data=[^&]+/, "data=hidden") + ")");
       }
       throw e;
     });
