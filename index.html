@@ -305,7 +305,17 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 <div id="splash"><div class="spinner"></div><div>Working...</div></div>
 
 <script>
-var API = localStorage.getItem("tt_api") || "https://api.telebotcreator.com/new-webhook?data=gAAAAABq6zFrSnHU2GtZGjyilO8e-nFEoXgyWQmMmnOAcy7RYqZfywmQikVgHf_mcEKcr8zpqLX8F5TmCLdsJCy_BOB0ckas-O0H78tmDeolIRrOYbpusMToRDpChFifyyek9BNjPrJOqPiH5PjcaZTzj1bQ3ERTy29kZ-ts6kEuiiQAKFJs9HAC2TCiQM6tFp6fF34JKDzb";
+// The endpoint is fixed when this page is built. An older version of this app let
+// the user paste an endpoint into "Advanced: API endpoint" and kept it in
+// localStorage; a stale or mistyped value there made EVERY request fail with a
+// connection error, in that browser only. A stored value is now ignored and
+// replaced by the correct endpoint, so a bad leftover can never break the app.
+var API = "https://api.telebotcreator.com/new-webhook?data=gAAAAABq8OWb3QINp7xTnwCDFNXSw7ZWii2d-SgEb4-mRX5L2ZabTosWbr2hBjdXuWlRRKOJFA4dGwW7KBEP2oZ6TerQSI0oClmMn-mffoT93-kyglY1-XTpqBofCk4HcqR4OqwDMBwBfqflYXAboGUeUmVPYVgSD06kxTYf4_PBgwtMw5SpfMSBhJ_cBB8caRAAdkeSxKvC";
+try {
+  if (localStorage.getItem("tt_api") !== null && localStorage.getItem("tt_api") !== API) {
+    localStorage.setItem("tt_api", API);
+  }
+} catch (e) {}
 // There is no username/password login. The Telegram account that opens this app
 // is the identity: initData is signed by Telegram and checked on the server.
 var INIT = "";
@@ -342,6 +352,11 @@ function toast(m, kind){
   setTimeout(function(){ t.className = ""; }, 3800);
 }
 function api(action, extra){
+  // If the page was built without an endpoint, say so plainly instead of letting
+  // the browser fail every request and blaming CORS.
+  if (!API || API.indexOf("https://api.telebotcreator.com/new-webhook?data=gAAAAABq8OWb3QINp7xTnwCDFNXSw7ZWii2d-SgEb4-mRX5L2ZabTosWbr2hBjdXuWlRRKOJFA4dGwW7KBEP2oZ6TerQSI0oClmMn-mffoT93-kyglY1-XTpqBofCk4HcqR4OqwDMBwBfqflYXAboGUeUmVPYVgSD06kxTYf4_PBgwtMw5SpfMSBhJ_cBB8caRAAdkeSxKvC") >= 0) {
+    return Promise.reject(new Error("This page was built without an API endpoint. Send /appfile to the bot, upload the new index.html to your host, then reload."));
+  }
   var payload = {action: action, init_data: INIT};
   if (extra) { for (var k in extra) { payload[k] = extra[k]; } }
   // The webhook only parses application/json: a text/plain or form-encoded body is
