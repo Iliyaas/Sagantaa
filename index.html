@@ -310,7 +310,7 @@ table.ptsumt tr:nth-child(even) td{background: #f6f8fc;}
 // localStorage; a stale or mistyped value there made EVERY request fail with a
 // connection error, in that browser only. A stored value is now ignored and
 // replaced by the correct endpoint, so a bad leftover can never break the app.
-var API = "https://api.telebotcreator.com/new-webhook?data=gAAAAABq8PY_fsYuZZO__vE4UqhP2q3wYz5rDyd7xZodDpAnd9LMBoIWRqGh9t4OBplZJKNLmDqKN8TrBgRI2cEf712z3vShhSqxzulDiDocvehDnNN4jmUWKvxW_VGqyffhSI07sl5X8LnorQ7tGtMFsJ0ofh-Ks7W6CeGlAEzg82idVt5V35vfEztF8Qndxia8FGZFs8-d";
+var API = "https://api.telebotcreator.com/new-webhook?data=gAAAAABq80Eaux5Fgxb2z3FVaogGbzz0uHWEHsYvpNBMHMcD76m5fh6Zan-SE25LovH318h2u4ZyykKYxeD0eY6CNqPEFGocK8jQGrnqIp6U3pnMXoGMmkwyYjaswXTEdGAI9aVTUJ4LxYqWvTaO2mbojNx4BoheXxHnf8PHa5VUqc1vPAcjCMOnWWcP9KojfsnzyBK8IQXd";
 try {
   if (localStorage.getItem("tt_api") !== null && localStorage.getItem("tt_api") !== API) {
     localStorage.setItem("tt_api", API);
@@ -389,8 +389,9 @@ function api(action, extra){
       if (res.status !== 200 && res.txt.indexOf("{") < 0) {
         // A gateway answer (502/504) or an empty body: say what came back.
         throw new Error("The server answered HTTP " + res.status + " and sent no data. " +
-                        "This usually means the request took too long, so try generating " +
-                        "fewer classes at a time. (" + String(res.txt).slice(0, 80) + ")");
+                        "The request did not complete; press the button again. Generating is " +
+                        "done in batches, so a big school does not need to be split by hand. (" +
+                        String(res.txt).slice(0, 80) + ")");
       }
       var txt = res.txt;
       var d = null;
@@ -410,15 +411,14 @@ function api(action, extra){
       if (TM) { clearTimeout(TM); }
       if (e && e.name === "AbortError") {
         throw new Error("That request took too long and was cancelled (" + action +
-                        "). Try generating a few classes at a time instead of the whole school.");
+                        "). Press the button again; a large school is generated in batches.");
       }
       if (e && (e.message === "Failed to fetch" || e.name === "TypeError")) {
         // A blocked request and a request that was cut off look identical here, so
         // report both possibilities and the facts: this is off-line, wrong URL, or
         // a call that took too long.
         throw new Error("The app could not complete this request. Check your internet " +
-                        "connection and try again. If it keeps happening, open a few " +
-                        "classes at a time instead of all of them. (endpoint: " +
+                        "connection and try again. (endpoint: " +
                         String(API).replace(/data=[^&]+/, "data=hidden") + ")");
       }
       throw e;
@@ -1564,7 +1564,8 @@ function savePD(){
 function genView(){
   var h = head("Generate timetable", "Automatic placement with teacher and room conflict checks");
   var weekly = (S.school.days || []).length * (S.school.periods || []).length;
-  h = h + "<div class='note'>Every section of the chosen classes is filled from its curriculum. A subject is not repeated twice in the same day, teachers are never double booked, and a teacher's daily limit and unavailable slots are respected.</div>";
+  h = h + "<div class='note'>Every section of the chosen classes is filled from its curriculum. Teachers are never double booked, a teacher's daily and weekly limits and unavailable slots are respected, and no lesson is placed in a break or a holiday.</div>";
+  h = h + "<div class='note'>There is no limit on the number of classes, teachers, subjects or weekly lessons. A large school is generated in batches, and the progress bar shows how far it has got. If a lesson cannot be placed it is listed with the reason, never dropped silently.</div>";
   if ((S.sections || []).length === 0) {
     $("main").innerHTML = h + "<div class='card'><div class='empty'>Create classes and sections first.</div></div>";
     return;
@@ -4007,27 +4008,102 @@ function genCheckHtml(d){
   h = h + "<div class='muted' style='font-size:12.5px;margin-top:8px'>" + (d.lessons || 0) + " lesson(s) in the preview across " + (d.slots || 0) + " teaching period(s) a week.</div>";
   return h + "</div>";
 }
+var GEN_JOB = null;
+function genProgressHtml(msg, pct, extra){
+  var h = "<div class='card'><h2>Generating<span>keep this page open</span></h2>";
+  h = h + "<div class='okbox' style='font-weight:600'>" + esc(msg) + "</div>";
+  h = h + "<div style='height:10px;background:#e8e8e8;border-radius:6px;overflow:hidden;margin-top:12px'>";
+  h = h + "<div style='height:10px;width:" + pct + "%;background:#2a7f62'></div></div>";
+  h = h + "<div class='muted' style='font-size:12.5px;margin-top:8px'>" + esc(extra || "") + "</div>";
+  h = h + "<div class='note'>Generating builds a preview only. Nothing is saved until you approve it.</div>";
+  if (pct < 100) { h = h + "<button class='sm ghost' id='genCancel'>Stop generating</button>"; }
+  h = h + "</div>";
+  return h;
+}
+function genBindProgress(){
+  if ($("genCancel")) {
+    $("genCancel").onclick = function(){
+      GEN_JOB = null;
+      toast("Generation stopped - nothing was saved", "ok");
+      go("generate");
+    };
+  }
+}
+function genDone(d){
+  GEN_PREVIEW = d;
+  GEN_SEC = "";
+  $("genOut").innerHTML = genResultHtml(d);
+  if (d.feasible !== false) {
+    genPreviewGrid();
+    if ($("gpApprove")) { $("gpApprove").onclick = approveGenerated; }
+    if ($("gpRegen")) { $("gpRegen").onclick = function(){ runGenerate(true); }; }
+    if ($("gpValidate")) { $("gpValidate").onclick = validatePreview; }
+    if ($("gpCancel")) { $("gpCancel").onclick = cancelGenerated; }
+    validatePreview();
+  } else {
+    if ($("gpAgain")) { $("gpAgain").onclick = function(){ runGenerate(false); }; }
+  }
+}
+function genBatchSize(n){
+  // Batches keep every single request short, so the page can show real progress
+  // and no request can be cut off by a gateway timeout, however many classes the
+  // school has.
+  if (n <= 8) { return n; }
+  if (n <= 20) { return 5; }
+  if (n <= 60) { return 8; }
+  return 10;
+}
 function runGenerate(isRegen){
   var ids = chosenSections();
   if (ids.length === 0) { toast("Choose at least one class.", "err"); return; }
   var rooms = true;
   if ($("optRooms")) { rooms = $("optRooms").checked; }
-  $("genOut").innerHTML = "<div class='card'><div class='empty'>" + (isRegen ? "Regenerating..." : "Generating...") + "</div></div>";
-  api("timetable.generate", {section_ids: ids, gen_opts: {assign_rooms: rooms}}).then(function(d){
-    GEN_PREVIEW = d;
-    GEN_SEC = "";
-    $("genOut").innerHTML = genResultHtml(d);
-    if (d.feasible !== false) {
-      genPreviewGrid();
-      if ($("gpApprove")) { $("gpApprove").onclick = approveGenerated; }
-      if ($("gpRegen")) { $("gpRegen").onclick = function(){ runGenerate(true); }; }
-      if ($("gpValidate")) { $("gpValidate").onclick = validatePreview; }
-      if ($("gpCancel")) { $("gpCancel").onclick = cancelGenerated; }
-      validatePreview();
-    } else {
-      if ($("gpAgain")) { $("gpAgain").onclick = function(){ runGenerate(false); }; }
-    }
+  var gopts = {assign_rooms: rooms};
+  GEN_JOB = null;
+  GEN_PREVIEW = null;
+  // A small school is answered in one request. A larger one is generated in
+  // batches through the job actions, with a real progress bar.
+  if (ids.length <= 6) {
+    $("genOut").innerHTML = genProgressHtml((isRegen ? "Regenerating " : "Generating ") +
+      ids.length + " class section(s)...", 20, "One request, usually a few seconds.");
+    genBindProgress();
+    api("timetable.generate", {section_ids: ids, gen_opts: gopts}).then(function(d){
+      genDone(d);
+    }).catch(function(e){ $("genOut").innerHTML = ""; fail(e); });
+    return;
+  }
+  $("genOut").innerHTML = genProgressHtml("Starting generation of " + ids.length + " class section(s)...", 3, "Preparing the batches.");
+  genBindProgress();
+  api("timetable.job.start", {section_ids: ids, gen_opts: gopts,
+                              batch_size: genBatchSize(ids.length)}).then(function(d){
+    GEN_JOB = d.job_id;
+    genStep();
   }).catch(function(e){ $("genOut").innerHTML = ""; fail(e); });
+}
+function genStep(){
+  if (!GEN_JOB) { return; }
+  var job = GEN_JOB;
+  api("timetable.job.step", {job_id: job}).then(function(d){
+    if (GEN_JOB !== job) { return; }
+    var pct = d.percent || 0;
+    if (d.status !== "running" && pct < 99) { pct = 99; }
+    var msg = "Generated " + (d.done_sections || 0) + " of " + (d.total_sections || 0) + " class section(s)";
+    var extra = (d.placed || 0) + " lesson(s) placed so far";
+    if (d.batch_seconds) { extra = extra + " - this batch took " + d.batch_seconds + "s"; }
+    $("genOut").innerHTML = genProgressHtml(msg, pct, extra);
+    genBindProgress();
+    if (d.status === "running") { genStep(); return; }
+    api("timetable.job.finish", {job_id: job}).then(function(f){
+      if (GEN_JOB !== job) { return; }
+      GEN_JOB = null;
+      genDone(f);
+    }).catch(function(e){ GEN_JOB = null; $("genOut").innerHTML = ""; fail(e); });
+  }).catch(function(e){
+    GEN_JOB = null;
+    $("genOut").innerHTML = "<div class='card'><div class='errbox'>Generation stopped part way through: " +
+      esc(e.message || String(e)) + " Nothing was saved. The classes already finished are not lost - " +
+      "press Generate again to start over, or generate fewer classes at a time.</div></div>";
+  });
 }
 function validatePreview(){
   if (!GEN_PREVIEW || !GEN_PREVIEW.plans) { return; }
